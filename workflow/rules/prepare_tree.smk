@@ -25,6 +25,22 @@ rule combine_data:
          """
 
 
+rule add_interest:
+    message: "Add focus to metadata"
+    group: "preparation"
+    input:
+        metadata = rules.combine_data.output.metadata
+    output:
+        metadata = os.path.join( config["output"], "HCoV-19-Genomics/metadata_interest.tsv" )
+    shell:
+        """
+        {python} workflow/scripts/add_interest.py \
+            --metadata {input.metadata} \
+            --focus {config[focus]} \
+            --output {output.metadata}
+        """
+
+
 rule filter:
     message:
         """
@@ -36,7 +52,7 @@ rule filter:
     group: "preparation"
     input:
         sequences = rules.combine_data.output.sequences,
-        metadata = rules.combine_data.output.metadata
+        metadata = rules.add_interest.output.metadata
     params:
         include = config["include"],
         exclude = config["exclude"],
@@ -92,7 +108,7 @@ rule align:
         """
 
 
-rule mask_vcf:
+rule mask:
     message:
         """
         Mask bases in alignment based on provided VCF. Based on VCF provided by De Maio et al. at https://virological.org/t/masking-strategies-for-sars-cov-2-alignments/
@@ -111,7 +127,9 @@ rule mask_vcf:
             -v {input.mask}
         """
 
+
 rule collapse_polytomies:
+    message: "Collapse edges of tree that are indistinguishable from polytomies"
     group: "tree"
     output:
           collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" )
@@ -122,3 +140,27 @@ rule collapse_polytomies:
             --output {output.collapsed_tree} \
             {config[collapse_polytomies][tree_url]}
          """
+
+rule prune_tree:
+    message: "Prunes input tree to match alignment, metadata, and focus"
+    group: "align"
+    input:
+        tree = rules.collapse_polytomies.output.collapsed_tree,
+        alignment = rules.mask.output.alignment,
+        metadata = rules.add_interest.output.metadata
+    output:
+        global_tree = os.path.join( config["output"], "data-dir/global.tree" ),
+        global_alignment = os.path.join( config["output"], "data-dir/sequences.fasta" ),
+        global_metadata = os.path.join( config["output"], "data-dir/metadata.csv" ),
+        query_alignment = os.path.join( config["output"], "data-dir/query.fasta" ),
+        query_metadata = os.path.join( config["output"], "data-dir/query.csv" )
+    params:
+        outdir = os.path.join( config["output"], "data-dir" )
+    shell:
+        """
+        {python} workflow/scripts/prune_tree.py \
+            --tree {input.tree} \
+            --alignment {input.alignment} \
+            --metadata {input.metadata} \
+            --outdir {params.outdir}
+        """

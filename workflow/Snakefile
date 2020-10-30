@@ -9,7 +9,8 @@ python = sys.executable or "python3"
 rule all:
     input:
         alignment = os.path.join( config["output"], "masked.fasta" ),
-        collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" )
+        collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" ),
+        global_tree = os.path.join( config["output"], "data-dir/global.tree" )
         #cleaned_tree = os.path.join( config["output"], "input/global.tree" ),
         #cleaned_md = os.path.join( config["output"], "input/metadata.csv"),
         #cleaned_alignment
