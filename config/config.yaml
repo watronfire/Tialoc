@@ -5,6 +5,7 @@ include: "resources/include_mb.txt"
 exclude: "resources/exclude.txt"
 reference: "MN908947"
 email: "natem@scripps.edu"
+focus: "country:Mexico"
 
 combine_data:
   country_codes: "resources/country_codes.csv"
