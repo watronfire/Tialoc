@@ -22,3 +22,6 @@ partition_sequences:
 mask:
   vcf: "resources/mask.vcf"
 
+collapse_polytomies:
+  tree_url: "https://raw.githubusercontent.com/roblanf/sarscov2phylo/master/ft_SH.tree"
+  limit: 0.00003

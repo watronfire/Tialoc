@@ -8,10 +8,18 @@ python = sys.executable or "python3"
 
 rule all:
     input:
-        alignment = os.path.join( config["output"], "masked.fasta" )
+        alignment = os.path.join( config["output"], "masked.fasta" ),
+        collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" )
         #cleaned_tree = os.path.join( config["output"], "input/global.tree" ),
         #cleaned_md = os.path.join( config["output"], "input/metadata.csv"),
         #cleaned_alignment
 
+# Include rules for download input files
+include: "rules/downloads.smk"
+
+# Include rules for preparing the alignment, metadata, and large tree to be used as input
+# for llama.
 include: "rules/prepare_tree.smk"
+
+
 

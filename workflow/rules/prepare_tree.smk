@@ -1,40 +1,8 @@
 import datetime
 
-rule download_search_data:
-    message: "Download data from SEARCH github repository"
-    group: "init"
-    output:
-        metadata = os.path.join( config["output"], "HCoV-19-Genomics/metadata.csv" )
-    shell:
-        """
-        cd {config[output]} 
-        git clone https://github.com/andersen-lab/HCoV-19-Genomics.git
-        """
-
-rule download_exclude:
-    message: "Updating excluded sequence list from ncov repository"
-    group: "init"
-    output:
-        exclude = config["exclude"]
-    shell:
-        """
-        curl https://raw.githubusercontent.com/nextstrain/ncov/master/defaults/exclude.txt \
-            --output {output.exclude}
-        """
-
-rule download_mask:
-    message: "Collect vcf mask from repository"
-    output:
-        vcf = "resources/mask.vcf"
-    shell:
-        """
-        curl https://raw.githubusercontent.com/W-L/ProblematicSites_SARS-CoV2/master/problematic_sites_sarsCov2.vcf
-            --output {output.vcf}
-        """
-
 rule combine_data:
     message: "Combine data from GISAID and SEARCH github repository, while also renaming sequences to match useful format"
-    group: "init"
+    group: "preparation"
     input:
         gisaid_seqs = config["gisaid_seqs"],
         gisaid_metadata = config["gisaid_md"],
@@ -56,13 +24,16 @@ rule combine_data:
             --exclude {input.exclude}
          """
 
+
 rule filter:
     message:
         """
         Filtering to
           - excluding strains in {params.exclude}
           - minimum genome length of {params.min_length}
+          - Allowed date range of {params.min_date} -> {params.max_date}
         """
+    group: "preparation"
     input:
         sequences = rules.combine_data.output.sequences,
         metadata = rules.combine_data.output.metadata
@@ -77,7 +48,6 @@ rule filter:
         max_date = datetime.datetime.today().strftime( "%Y-%m-%d" )
     output:
         sequences = os.path.join( config["output"], "filtered.fasta" )
-    group: "init"
     shell:
         """
         augur filter \
@@ -94,12 +64,14 @@ rule filter:
             --output {output.sequences}
         """
 
+
 rule align:
     message:
         """
         Aligning sequences to {config[reference]}
           - gaps relative to reference are considered real
         """
+    group: "preparation"
     input:
         sequences = rules.filter.output.sequences,
     output:
@@ -121,11 +93,11 @@ rule align:
 
 
 rule mask_vcf:
-    group: "align"
     message:
         """
         Mask bases in alignment based on provided VCF. Based on VCF provided by De Maio et al. at https://virological.org/t/masking-strategies-for-sars-cov-2-alignments/
         """
+    group: "preparation"
     input:
         alignment = rules.align.output.alignment,
         mask = rules.download_mask.output.vcf
@@ -138,3 +110,15 @@ rule mask_vcf:
             -o {output.alignment} \
             -v {input.mask}
         """
+
+rule collapse_polytomies:
+    group: "tree"
+    output:
+          collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" )
+    shell:
+         """
+         {python} workflow/scripts/collapse_polytomies.py \
+            --limit {config[collapse_polytomies][limit]} \
+            --output {output.collapsed_tree} \
+            {config[collapse_polytomies][tree_url]}
+         """
