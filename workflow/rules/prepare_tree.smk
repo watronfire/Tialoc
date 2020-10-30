@@ -97,16 +97,15 @@ rule filter:
 rule align:
     message:
         """
-        Aligning sequences to {input.reference}
+        Aligning sequences to {config[reference]}
           - gaps relative to reference are considered real
-        Cluster:  {wildcards.cluster}
         """
     input:
         sequences = rules.filter.output.sequences,
     output:
-        alignment = os.path.join( config["output"], "aligned.fasta" ),
-        alignment_folder = temp( directory( os.path.join( config["output"], "alignment/" ) ) )
-    params:
+        alignment = os.path.join( config["output"], "aligned.fasta" )
+    params:       
+        alignment_folder = os.path.join( config["output"], "alignment/" ),
         temp_alignment = os.path.join( config["output"], "alignment/filtered.fasta.aln" )
     threads: 16
     shell:
@@ -115,7 +114,7 @@ rule align:
             -s {input.sequences} \
             -r {config[reference]} \
             -e {config[email]} \
-            -o {output.alignment_folder} \
+            -o {params.alignment_folder} \
             -t {threads} &&
         mv {params.temp_alignment} {output.alignment}
         """
