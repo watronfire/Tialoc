@@ -1,0 +1,28 @@
+{
+  "__default__" :
+  {
+    "walltime" : "2:00:00",
+    "mem" : "5gb",
+    "queue" : "gpu",
+    "logfile" : "/gpfs/home/natem/logs/nextstrain.txt",
+    "n" : 1,
+    "stdout" : "oe"
+  },
+  "align" :
+  {
+    "n" : 2,
+    "queue" : "workq"
+  },
+  "tree" :
+  {
+    "walltime" : "120:00:00",
+    "mem" : "24gb",
+    "n" : "16",
+    "queue" : "workq"
+  },
+  "refine" :
+  {
+    "walltime" : "16:00:00",
+    "mem" : "8gb"
+  }
+}

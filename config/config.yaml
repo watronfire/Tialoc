@@ -1,0 +1,24 @@
+output: "/Users/natem/Data/pipeline_temp"
+gisaid_seqs: "/Users/natem/Data/pipeline_temp/sequences_2020-10-29_07-32.fasta"
+gisaid_md: "/Users/natem/Data/pipeline_temp/metadata_2020-10-29_08-57.tsv"
+include:
+exclude: "resources/exclude.txt"
+reference: "MN908947"
+email: "natem@scripps.edu"
+
+combine_data:
+  country_codes: "/Users/natem/Data/raw_data/dictionaries/country_codes.csv"
+
+filter:
+  min_length: 25000
+  exclude_where: "date='2020' date='2020-01-XX' date='2020-02-XX' date='2020-03-XX' date='2020-04-XX' date='2020-05-XX' date='2020-06-XX' date='2020-01' date='2020-02' date='2020-03' date='2020-04' date='2020-05' date='2020-06' date='2020=07'"
+  group_by: "division year month"
+  sequences_per_group: 2000
+  min_date: "2020-12-01"
+
+partition_sequences:
+  sequences_per_group: 300
+
+mask:
+  vcf: "resources/mask.vcf"
+

@@ -1,0 +1,18 @@
+import sys
+import os
+from snakemake.utils import validate
+
+validate(config, schema="../config/schemas/config.schema.yaml")
+
+python = sys.executable or "python3"
+
+rule all:
+    input:
+        sequences = os.path.join( config["output"], "HCoV-19-Genomics/sequences.fasta" ),
+        metadata = os.path.join( config["output"], "HCoV-19-Genomics/metadata.tsv" )
+        #cleaned_tree = os.path.join( config["output"], "input/global.tree" ),
+        #cleaned_md = os.path.join( config["output"], "input/metadata.csv"),
+        #cleaned_alignment
+
+include: "rules/prepare_tree.smk"
+
