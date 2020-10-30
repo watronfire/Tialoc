@@ -11,17 +11,38 @@ rule download_search_data:
         git clone https://github.com/andersen-lab/HCoV-19-Genomics.git
         """
 
+rule download_exclude:
+    message: "Updating excluded sequence list from ncov repository"
+    group: "init"
+    output:
+        exclude = config["exclude"]
+    shell:
+        """
+        curl https://raw.githubusercontent.com/nextstrain/ncov/master/defaults/exclude.txt \
+            --output {output.exclude}
+        """
+
+rule download_mask:
+    message: "Collect vcf mask from repository"
+    output:
+        vcf = "resources/mask.vcf"
+    shell:
+        """
+        curl https://raw.githubusercontent.com/W-L/ProblematicSites_SARS-CoV2/master/problematic_sites_sarsCov2.vcf
+            --output {output.vcf}
+        """
+
 rule combine_data:
     message: "Combine data from GISAID and SEARCH github repository, while also renaming sequences to match useful format"
     group: "init"
     input:
         gisaid_seqs = config["gisaid_seqs"],
         gisaid_metadata = config["gisaid_md"],
-        search_md = rules.download_search_data.output.metadata
+        search_md = rules.download_search_data.output.metadata,
+        exclude = rules.download_exclude.output.exclude
     params:
         search_repo = os.path.join( config["output"], "HCoV-19-Genomics/" ),
         country_dict = config["combine_data"]["country_codes"],
-        exclude = config["combine_data"]["exclude"]
     output:
         sequences = os.path.join( config["output"], "HCoV-19-Genomics/sequences.fasta" ),
         metadata = os.path.join( config["output"], "HCoV-19-Genomics/metadata.tsv" )
@@ -32,7 +53,7 @@ rule combine_data:
             --gseqs {input.gisaid_seqs} \
             --gmetadata {input.gisaid_metadata} \
             --country {params.country_dict} \
-            --exclude {params.exclude}
+            --exclude {input.exclude}
          """
 
 rule filter:
@@ -99,15 +120,6 @@ rule align:
         mv {params.temp_alignment} {output.alignment}
         """
 
-rule update_mask:
-    message: "Collect vcf mask from repository"
-    output:
-        vcf = "resources/mask.vcf"
-    shell:
-        """
-        curl https://raw.githubusercontent.com/W-L/ProblematicSites_SARS-CoV2/master/problematic_sites_sarsCov2.vcf
-            --output {output.vcf}
-        """
 
 rule mask_vcf:
     group: "align"
@@ -116,10 +128,10 @@ rule mask_vcf:
         Mask bases in alignment based on provided VCF. Based on VCF provided by De Maio et al. at https://virological.org/t/masking-strategies-for-sars-cov-2-alignments/
         """
     input:
-        alignment = rules.align.output.alignment
-        mask = rules.update_mask.output.vcf
+        alignment = rules.align.output.alignment,
+        mask = rules.download_mask.output.vcf
     output:
-        alignment = os.path.join( config["output"], "results/masked.fasta" )
+        alignment = os.path.join( config["output"], "masked.fasta" )
     shell:
         """
         {python:q} workflow/scripts/mask_alignment_vcf.py \
