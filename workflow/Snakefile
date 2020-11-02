@@ -8,9 +8,10 @@ python = sys.executable or "python3"
 
 rule all:
     input:
-        alignment = os.path.join( config["output"], "masked.fasta" ),
-        collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" ),
-        global_tree = os.path.join( config["output"], "data-dir/global.tree" )
+        collapsed_nodes = os.path.join( config["output"], "llama_output/catchment_trees/localcollapsed_nodes.csv" )
+        #alignment = os.path.join( config["output"], "masked.fasta" ),
+        #collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" ),
+        #global_tree = os.path.join( config["output"], "data-dir/global.tree" )
         #cleaned_tree = os.path.join( config["output"], "input/global.tree" ),
         #cleaned_md = os.path.join( config["output"], "input/metadata.csv"),
         #cleaned_alignment
@@ -22,5 +23,6 @@ include: "rules/downloads.smk"
 # for llama.
 include: "rules/prepare_tree.smk"
 
-
+# Include rules for subsampling large tree.
+include: "rules/subsample_tree.smk" 
 

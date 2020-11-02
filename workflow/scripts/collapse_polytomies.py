@@ -7,9 +7,10 @@ def collapse_polytomies( input_tree, limit, output ):
     count = 0
 
     bl = [i.edge_length for i in tree.internal_nodes()]
+    bl = [i for i in bl if i is not None]
     cn = sum( [i < limit for i in bl] )
 
-    print( "{} of {} nodes estimated to be collapsed ({:.2f}%)".format( cn, len( tree.internal_nodes() ), cn / len( tree.internal_nodes() ) * 100 ) )
+    print( "{} of {} nodes estimated to be collapsed ({:.2f}%) with a limit of {}".format( cn, len( tree.internal_nodes() ), cn / len( tree.internal_nodes() ) * 100, args.limit ) )
 
     tree.collapse_unweighted_edges( threshold=limit )
 

@@ -36,7 +36,7 @@ rule add_interest:
         """
         {python} workflow/scripts/add_interest.py \
             --metadata {input.metadata} \
-            --focus {config[focus]} \
+            --interest {config[focus]} \
             --output {output.metadata}
         """
 
@@ -150,7 +150,7 @@ rule prune_tree:
         metadata = rules.add_interest.output.metadata
     output:
         global_tree = os.path.join( config["output"], "data-dir/global.tree" ),
-        global_alignment = os.path.join( config["output"], "data-dir/sequences.fasta" ),
+        global_alignment = os.path.join( config["output"], "data-dir/alignment.fasta" ),
         global_metadata = os.path.join( config["output"], "data-dir/metadata.csv" ),
         query_alignment = os.path.join( config["output"], "data-dir/query.fasta" ),
         query_metadata = os.path.join( config["output"], "data-dir/query.csv" )

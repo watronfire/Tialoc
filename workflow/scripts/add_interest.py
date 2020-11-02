@@ -21,10 +21,11 @@ def main( args ):
         df.loc[df[resolution] == value, "interest"] = "interest"
 
     df.loc[df["location"].isin( rejected_values ), "interest"] = "non-interest"
+    df["lineage"] = "?"
 
     df.to_csv( args.output, sep="\t", index=False )
-
-
+    
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser( description="Add focus to metadata" )
 

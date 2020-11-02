@@ -26,3 +26,7 @@ mask:
 collapse_polytomies:
   tree_url: "https://raw.githubusercontent.com/roblanf/sarscov2phylo/master/ft_SH.tree"
   limit: 0.00003
+
+run_llama:
+  input_column: "strain"
+  summarize: "country"
