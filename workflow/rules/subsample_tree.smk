@@ -1,4 +1,3 @@
-
 rule run_llama:
     message: "Pull substrees from tree corresponding to sequences in query metadata"
     group: "subsample"
@@ -29,3 +28,19 @@ rule run_llama:
             --threads {threads}
             -nr
         """
+
+rule generate_llama_script:
+    message: "Generating cluster script for llama."
+    group: "subsample"
+    input:
+        global_tree = rules.prune_tree.output.global_tree,
+        global_alignment = rules.prune_tree.output.global_alignment,
+        global_metadata = rules.prune_tree.output.global_metadata,
+        query_alignment = rules.prune_tree.output.query_alignment,
+        query_metadata = rules.prune_tree.output.query_metadata
+    output:
+        llama_script = os.path.join( config["output"], "llama_script.sh" )
+    shell:
+        "{python} workflow/scripts/generate_llama_script.py --outdir {config[output]}"
+
+       
