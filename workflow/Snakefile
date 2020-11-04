@@ -6,9 +6,19 @@ validate(config, schema="../config/schemas/config.schema.yaml")
 
 python = sys.executable or "python3"
 
+def determine_function( wildcards ):
+    if config["function"].lower() == "prepare":
+        return os.path.join( config["output"], "llama_script.sh" )
+    elif config["function"] == "subsample":
+        return_list = [os.path.join( config["output"], "output/subsampled_tree.newick" ),
+                       os.path.join( config["output"], "output/subsampled_metadata.csv"),
+                       os.path.join( config["output"], "output/subsampled_alignment.fasta")]
+        return os.path.join( config["output"], "output/subsampled_tree.newick" )
+
+
 rule all:
     input:
-        llama_script = os.path.join( config["output"], "llama_script.sh" )
+        determine_function
 
 # Include rules for download input files
 include: "rules/downloads.smk"
@@ -18,5 +28,5 @@ include: "rules/downloads.smk"
 include: "rules/prepare_tree.smk"
 
 # Include rules for subsampling large tree.
-#include: "rules/subsample_tree.smk" 
+include: "rules/subsample_tree.smk"
 

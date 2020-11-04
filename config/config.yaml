@@ -1,3 +1,4 @@
+function: "prepare"
 output: "/gpfs/home/natem/analysis/2020.10.30_hcov"
 gisaid_seqs: "/gpfs/home/natem/analysis/2020.10.30_hcov/sequences_2020-10-29_07-32.fasta"
 gisaid_md: "/gpfs/home/natem/analysis/2020.10.30_hcov/metadata_2020-10-29_08-57.tsv"

@@ -1,46 +1,43 @@
-rule run_llama:
-    message: "Pull substrees from tree corresponding to sequences in query metadata"
-    group: "subsample"
+import pandas as pd
+from subprocess import call
+
+rule parse_llama_output:
+    message: "subsamples sequences from llama output catchment files"
+    group: "subsample_tree"
     input:
-        global_tree = rules.prune_tree.output.global_tree,
-        global_alignment = rules.prune_tree.output.global_alignment,
-        global_metadata = rules.prune_tree.output.global_metadata,
-        query_alignment = rules.prune_tree.output.query_alignment,
-        query_metadata = rules.prune_tree.output.query_metadata
+        llama_output = directory( os.path.join( config["output"], "llama_output" ) ),
+        metadata = rules.add_interest.output.metadata
     output:
-        collapsed_nodes = os.path.join( config["output"], "llama_output/catchment_trees/localcollapsed_nodes.csv" ),
-        local_trees = directory( os.path.join( config["output"], "llama_output/local_trees" ) )
-    params:
-        data_dir = os.path.join( config["output"], "data-dir" ),
-        output_dir = os.path.join( config["output"], "llama_output" )
-    conda: "/gpfs/home/natem/scripts/Tialoc/workflow/envs/llama.yaml"
-    threads: 16
+        sequences = os.path.join( config["output"], "selected_sequences.txt" )
     shell:
         """
-        llama \ 
-            --input {input.query_metadata} \
-            --datadir {params.data_dir} \
-            --input-column {config[run_llama][input_column]} \
-            --data-column {config[run_llama][input_column]} \
-            --node-summary {config[run_llama][summarize]} \
-            --fasta {input.query_alignment} \
-            --outdir {params.output_dir} \
-            --threads {threads}
-            -nr
+        {python} workflow/scripts/parse_llama_output.py \
+            --metadata {input.metadata} \
+            --llama {input.llama_output} \
+            --output {output.sequences}
         """
 
-rule generate_llama_script:
-    message: "Generating cluster script for llama."
-    group: "subsample"
+rule extract_llama_output:
+    message: "Filter metadata and alignment to sequences specified by llama output."
+    group: "subsample_tree"
     input:
-        global_tree = rules.prune_tree.output.global_tree,
-        global_alignment = rules.prune_tree.output.global_alignment,
-        global_metadata = rules.prune_tree.output.global_metadata,
-        query_alignment = rules.prune_tree.output.query_alignment,
-        query_metadata = rules.prune_tree.output.query_metadata
+        alignment = rules.mask.output.alignment,
+        metadata = rules.add_interest.output,
+        sequences = rules.parse_llama_output.output.sequences
     output:
-        llama_script = os.path.join( config["output"], "llama_script.sh" )
-    shell:
-        "{python} workflow/scripts/generate_llama_script.py --outdir {config[output]}"
+        subsampled_alignment = os.path.join( config["output"], "output/subsampled_alignment.fasta" ),
+        subsampled_metadata = os.path.join( config["output"], "output/subsampled_metadata.csv" )
+    run:
+        # load sequences
+        with open( input.sequences, "r" ) as seq_file:
+            seqs = [line.strip() for line in seq_file]
 
-       
+        md = pd.read_csv( input.metadata )
+        md = md.loc[md["strain"].isin( seqs )]
+        print( "{} of {} entries found in metadata".format( len( md ), len( seqs ) ) )
+        md.to_csv( output.subsampled_metadata, index=False )
+
+        # Filter alignment
+        command = ["module load seqtk",
+                   "seqtk subseq {} {} > {}".format( input.alignment, input.sequences, output.subsampled_alignment )]
+        call( " && ".join( command ), shell=True )
