@@ -70,7 +70,7 @@ def main( args ):
 
     # Write files to disk
     tree.write( path=os.path.join( args.outdir, "global.tree" ), schema="newick" )
-    AlignIO.write( tree_alignment, os.path.join( args.outdir, "sequences.fasta" ), "fasta" )
+    AlignIO.write( tree_alignment, os.path.join( args.outdir, "alignment.fasta" ), "fasta" )
     tree_md.to_csv( os.path.join( args.outdir, "metadata.csv" ), index=False )
     AlignIO.write( query_alignment, os.path.join( args.outdir, "query.fasta" ), "fasta" )
     query_md.to_csv( os.path.join( args.outdir, "query.csv" ), index=False )

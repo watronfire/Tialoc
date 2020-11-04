@@ -2,27 +2,20 @@
   "__default__" :
   {
     "walltime" : "2:00:00",
-    "mem" : "5gb",
+    "mem" : "8gb",
     "queue" : "gpu",
-    "logfile" : "/gpfs/home/natem/logs/nextstrain.txt",
+    "logfile" : "/gpfs/home/natem/logs/tialoc.txt",
     "n" : 1,
     "stdout" : "oe"
   },
   "align" :
   {
-    "n" : 2,
-    "queue" : "workq"
+    "mem" : "16gb",
+    "n" : 16
   },
-  "tree" :
+  "prune_tree" : 
   {
-    "walltime" : "120:00:00",
-    "mem" : "24gb",
-    "n" : "16",
-    "queue" : "workq"
-  },
-  "refine" :
-  {
-    "walltime" : "16:00:00",
-    "mem" : "8gb"
+    "mem" : "16gb",
+    "walltime" : "12:00:00",
   }
 }

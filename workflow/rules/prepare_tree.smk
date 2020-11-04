@@ -36,7 +36,7 @@ rule add_interest:
         """
         {python} workflow/scripts/add_interest.py \
             --metadata {input.metadata} \
-            --interest {config[focus]} \
+            --interest {config[focus]:q} \
             --output {output.metadata}
         """
 
