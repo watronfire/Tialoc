@@ -31,3 +31,10 @@ collapse_polytomies:
 run_llama:
   input_column: "strain"
   summarize: "country"
+
+extract_llama_output:
+  include: "CHN/Hubei-Wuhan/MN908947.3/2019-12-26 CHN/Hubei-Wuhan/LR757998.1/2019-12-26"
+
+tree:
+  model: "HKY"
+  outgroup: "CHN/Hubei-Wuhan/MN908947.3/2019-12-26"

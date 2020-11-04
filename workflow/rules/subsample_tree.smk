@@ -31,6 +31,7 @@ rule extract_llama_output:
         # load sequences
         with open( input.sequences, "r" ) as seq_file:
             seqs = [line.strip() for line in seq_file]
+        seqs.extend( config["extract_llama_output"]["include"].split( " " ) )
 
         md = pd.read_csv( input.metadata )
         md = md.loc[md["strain"].isin( seqs )]
@@ -41,3 +42,24 @@ rule extract_llama_output:
         command = ["module load seqtk",
                    "seqtk subseq {} {} > {}".format( input.alignment, input.sequences, output.subsampled_alignment )]
         call( " && ".join( command ), shell=True )
+
+rule build_tree:
+    message: "Generate tree from llama subsampling"
+    group: "tree"
+    input:
+        alignment = rules.extract_llama_output.output.subsampled_alignment
+    params:
+        outdir = os.path.join( config["output"], "tree/" )
+    output:
+        tree = os.path.join( config["output"], "tree/subsampled_alignment.fasta.treefile" )
+    shell:
+        """
+        iqtree \
+            -s {input.alignment} \
+            -pre {params.outdir} \
+            -au \
+            -m {config[build_tree][model]} \
+            -nt AUTO \
+            -redo \
+            -o {config[build_tree][outgroup]}
+        """
