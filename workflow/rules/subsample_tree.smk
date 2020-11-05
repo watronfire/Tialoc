@@ -3,7 +3,6 @@ from subprocess import call
 
 rule parse_llama_output:
     message: "subsamples sequences from llama output catchment files"
-    group: "subsample_tree"
     input:
         closes_in_db = os.path.join( config["output"], "closest_in_db.csv" ),
         metadata = rules.add_interest.output.metadata
@@ -21,7 +20,6 @@ rule parse_llama_output:
 
 rule extract_llama_output:
     message: "Filter metadata and alignment to sequences specified by llama output."
-    group: "subsample_tree"
     input:
         alignment = rules.mask.output.alignment,
         metadata = rules.add_interest.output,
@@ -47,7 +45,6 @@ rule extract_llama_output:
 
 rule build_tree:
     message: "Generate tree from llama subsampling"
-    group: "tree"
     input:
         alignment = rules.extract_llama_output.output.subsampled_alignment
     params:

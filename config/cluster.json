@@ -17,5 +17,16 @@
   {
     "mem" : "16gb",
     "walltime" : "12:00:00",
+  },
+  "parse_llama_output" :
+  {
+    "walltime" : "12:00:00",
+    "mem" : "16gb"
+  },
+  "build_tree" :
+  {
+    "mem" : "16gb",
+    "n" : 16,
+    "walltime" : "120:00:00"
   }
 }
