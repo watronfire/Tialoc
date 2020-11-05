@@ -5,8 +5,10 @@ rule parse_llama_output:
     message: "subsamples sequences from llama output catchment files"
     group: "subsample_tree"
     input:
-        llama_output = directory( os.path.join( config["output"], "llama_output" ) ),
+        closes_in_db = os.path.join( config["output"], "closest_in_db.csv" ),
         metadata = rules.add_interest.output.metadata
+    params:
+        llama_output = directory( os.path.join( config["output"], "llama_output" ) )
     output:
         sequences = os.path.join( config["output"], "selected_sequences.txt" )
     shell:
