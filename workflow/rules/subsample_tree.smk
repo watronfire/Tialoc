@@ -48,9 +48,10 @@ rule build_tree:
     input:
         alignment = rules.extract_llama_output.output.subsampled_alignment
     params:
-        outdir = os.path.join( config["output"], "tree/" )
+        outdir = os.path.join( config["output"], "subsampled_tree/" ),
+        otree = os.path.join( config["output"], "subsampled_tree/subsampled_alignment.fasta.treefile" )
     output:
-        tree = os.path.join( config["output"], "tree/subsampled_alignment.fasta.treefile" )
+        tree = os.path.join( config["output"], "output/subsampled_tree.newick" )
     shell:
         """
         iqtree \
@@ -60,5 +61,6 @@ rule build_tree:
             -m {config[build_tree][model]} \
             -nt AUTO \
             -redo \
-            -o {config[build_tree][outgroup]}
+            -o {config[build_tree][outgroup]} &&
+        mv {params.otree} {output.tree}
         """
