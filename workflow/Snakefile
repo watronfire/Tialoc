@@ -13,7 +13,8 @@ def determine_function( wildcards ):
         return_list = [os.path.join( config["output"], "output/subsampled_tree.newick" ),
                        os.path.join( config["output"], "output/subsampled_metadata.csv"),
                        os.path.join( config["output"], "output/subsampled_alignment.fasta")]
-        return os.path.join( config["output"], "output/subsampled_tree.newick" )
+        return_list.extend( expand( os.path.join( config["output"], "output/subsampled_{clade}_tree.newick" ), clade=config["clades"] ) )
+        return return_list
 
 
 rule all:
