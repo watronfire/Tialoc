@@ -7,6 +7,11 @@ exclude: "resources/exclude.txt"
 reference: "MN908947"
 email: "natem@scripps.edu"
 focus: "division:California,Arizona,Texas,New Mexico;country:Mexico"
+clades:
+  - "A"
+  - "B"
+  - "B.1"
+  - "B.1.1"
 
 combine_data:
   country_codes: "resources/country_codes.csv"

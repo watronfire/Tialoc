@@ -1,6 +1,7 @@
 import pandas as pd
 from subprocess import call
 
+
 rule parse_llama_output:
     message: "subsamples sequences from llama output catchment files"
     input:
@@ -17,6 +18,7 @@ rule parse_llama_output:
             --llama {params.llama_output} \
             --output {output.sequences}
         """
+
 
 rule extract_llama_output:
     message: "Filter metadata and alignment to sequences specified by llama output."
@@ -44,7 +46,58 @@ rule extract_llama_output:
         call( " && ".join( command ), shell=True )
 
 
-rule build_tree:
+rule identify_lineages:
+    message: "Use pangolin to identify lineages"
+    input:
+        alignment = rules.extract_llama_output.output.subsampled_alignment
+    params:
+        outdir = os.path.join( config["output"], "output/" )
+    conda:
+        "../envs/pangolin.yaml"
+    output:
+        lineages = os.path.join( config["output"], "output/lineage_report.csv" )
+    shell:
+        """
+        pangolin {input.alignment} -o {params.outdir} -t 8
+        """
+
+
+rule split_lineages:
+    input:
+        alignment = rules.extract_llama_output.output.subsampled_alignment,
+        lineages = rules.identify_lineages.output.lineages
+    params:
+        outdir = os.path.join( config["output"], "clade_alignment" )
+    output:
+        clade_alignments = expand( os.path.join( config["output"], "clade_alignments/clade_{clade}.fasta" ), clade=config["clades"] )
+    shell:
+        """
+        {python} split_clade_alignments.py 
+            --alignment {input.alignment} \
+            --lineages {input.lineages} \
+            --clades {config["clades"]} \
+            --output {params.outdir}
+        """
+
+
+rule build_clade_tree:
+    message: "Generate tree from llama subsampling"
+    input:
+        alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" )
+    output:
+        tree = os.path.join( config["output"], "output/subsampled_{clade}_tree.newick" ),
+    shell:
+        """
+        augur tree \
+            --alignment {input.alignment} \
+            --method "iqtree" \
+            --output {output.tree} \
+            --substitution-model {config[build_tree][model]} \
+            --nthreads 16
+        """
+
+
+rule build_whole_tree:
     message: "Generate tree from llama subsampling"
     input:
         alignment = rules.extract_llama_output.output.subsampled_alignment
@@ -59,4 +112,5 @@ rule build_tree:
             --substitution-model {config[build_tree][model]} \
             --nthreads 16
         """
+
 

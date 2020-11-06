@@ -23,7 +23,17 @@
     "walltime" : "12:00:00",
     "mem" : "16gb"
   },
-  "build_tree" :
+  "identify_lineages" :
+  {
+    "n" : 8
+  },
+  "build_clade_tree" :
+  {
+    "mem" : "32gb",
+    "n" : 16,
+    "walltime" : "120:00:00"
+  },
+  "build_whole_tree" :
   {
     "mem" : "32gb",
     "n" : 16,
