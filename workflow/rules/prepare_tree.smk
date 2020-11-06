@@ -49,7 +49,6 @@ rule filter:
           - minimum genome length of {params.min_length}
           - Allowed date range of {params.min_date} -> {params.max_date}
         """
-    group: "preparation"
     input:
         sequences = rules.combine_data.output.sequences,
         metadata = rules.add_interest.output.metadata
@@ -87,7 +86,6 @@ rule align:
         Aligning sequences to {config[reference]}
           - gaps relative to reference are considered real
         """
-    group: "preparation"
     input:
         sequences = rules.filter.output.sequences,
     output:
@@ -113,7 +111,6 @@ rule mask:
         """
         Mask bases in alignment based on provided VCF. Based on VCF provided by De Maio et al. at https://virological.org/t/masking-strategies-for-sars-cov-2-alignments/
         """
-    group: "preparation"
     input:
         alignment = rules.align.output.alignment,
         mask = rules.download_mask.output.vcf

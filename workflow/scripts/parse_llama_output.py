@@ -230,7 +230,7 @@ def parse_llama_output( args ):
     # Load in closes_in_db
     closest_in_db = pd.read_csv( os.path.join( args.llama, "closest_in_db.csv" ), usecols=["strain"] )
     closest_in_db = closest_in_db["strain"].to_list()
-    keep = list()
+    keep = md.loc[md["interest"]=="interest"].index.to_list()
 
     report = list()
     for tree in catchment_trees:
