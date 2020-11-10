@@ -69,13 +69,13 @@ rule split_lineages:
     params:
         outdir = os.path.join( config["output"], "clade_alignment" )
     output:
-        clade_alignments = expand( os.path.join( config["output"], "clade_alignments/clade_{clade}.fasta" ), clade=config["clades"] )
+        clade_alignments = expand( os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" ), clade=config["clades"] )
     shell:
         """
-        {python} split_clade_alignments.py 
+        {python} workflow/scripts/split_clade_alignments.py \
             --alignment {input.alignment} \
             --lineages {input.lineages} \
-            --clades {config["clades"]} \
+            --clades {config[clades]} \
             --output {params.outdir}
         """
 

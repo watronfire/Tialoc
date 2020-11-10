@@ -4,6 +4,8 @@
 conda deactivate
 module load python/3.6.3
 
+export AUGUR_RECURSION_LIMIT=3000
+
 cd /gpfs/home/natem/scripts/Tialoc
 snakemake -k -j 50 \
   --snakefile workflow/Snakefile \

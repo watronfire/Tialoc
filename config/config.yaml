@@ -1,4 +1,4 @@
-function: "prepare"
+function: "subsample"
 output: "/gpfs/home/natem/analysis/2020.10.30_hcov"
 gisaid_seqs: "/gpfs/home/natem/analysis/2020.10.30_hcov/sequences_2020-10-29_07-32.fasta"
 gisaid_md: "/gpfs/home/natem/analysis/2020.10.30_hcov/metadata_2020-10-29_08-57.tsv"
@@ -40,6 +40,6 @@ run_llama:
 extract_llama_output:
   include: "CHN/Hubei-Wuhan/MN908947.3/2019-12-26 CHN/Hubei-Wuhan/LR757998.1/2019-12-26"
 
-tree:
+build_tree:
   model: "HKY"
   outgroup: "CHN/Hubei-Wuhan/MN908947.3/2019-12-26"
