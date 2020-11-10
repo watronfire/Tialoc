@@ -43,3 +43,7 @@ extract_llama_output:
 build_tree:
   model: "HKY"
   outgroup: "CHN/Hubei-Wuhan/MN908947.3/2019-12-26"
+
+clock_rate_filter:
+  clock_rate: 0.0008
+  iqd: 3

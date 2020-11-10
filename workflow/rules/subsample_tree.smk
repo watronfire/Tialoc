@@ -85,7 +85,7 @@ rule build_clade_tree:
     input:
         alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" )
     output:
-        tree = os.path.join( config["output"], "output/subsampled_{clade}_tree.newick" ),
+        tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree.newick" ),
     shell:
         """
         augur tree \
@@ -113,4 +113,31 @@ rule build_whole_tree:
             --nthreads 16
         """
 
+rule collapse_polytomies_alt:
+    message: "Collapse polytomies in IQTree output"
+    input:
+        tree = rules.build_clade_tree.output.tree
+    output:
+        collapsed_tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree_collapsed.newick" )
+    shell:
+         """
+         {python} workflow/scripts/collapse_polytomies.py \
+            --limit {config[collapse_polytomies][limit]} \
+            --output {output.collapsed_tree} \
+            --path {input.tree}
+         """
 
+rule clock_rate_filter:
+    message: "remove tips from tree which violate infered or specified clock rate"
+    input:
+         tree = rules.collapse_polytomies_alt.output.collapsed_tree
+    output:
+        filtered_tree = os.path.join( config["output"], "output/subsampled_{clade}_tree.newick" )
+    shell:
+        """
+        {python} workflow/scripts/clock_filter.py \
+            --input {input.tree} \
+            --clock-rate {config[clock_rate_filter][clock_rate]} \
+            --iqd {config[clock_rate_filter][iqd]} \
+            --output {output.filtered_tree}
+        """

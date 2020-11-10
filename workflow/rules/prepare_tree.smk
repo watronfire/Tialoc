@@ -135,7 +135,7 @@ rule collapse_polytomies:
          {python} workflow/scripts/collapse_polytomies.py \
             --limit {config[collapse_polytomies][limit]} \
             --output {output.collapsed_tree} \
-            {config[collapse_polytomies][tree_url]}
+            --url {config[collapse_polytomies][tree_url]}
          """
 
 rule prune_tree:
