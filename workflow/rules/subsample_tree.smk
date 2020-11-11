@@ -76,6 +76,7 @@ rule split_lineages:
             --alignment {input.alignment} \
             --lineages {input.lineages} \
             --clades {config[clades]} \
+            --root {config[extract_llama_output][include]} \
             --output {params.outdir}
         """
 

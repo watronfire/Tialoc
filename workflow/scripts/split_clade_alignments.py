@@ -21,7 +21,9 @@ def split_clades( args ):
     for i in args.clades:
         with tempfile.NamedTemporaryFile( suffix=".txt", mode="w+", delete=False ) as temp_clade:
             entries = lineages.loc[lineages["group"]==i,"taxon"].to_list()
+            entries.extend( args.root )
             temp_clade.write( "\n".join( entries ) )
+
 
         command = ["module load seqtk",
                    "seqtk subseq {} {} > {}".format( args.alignment, temp_clade.name, os.path.join( args.output, "clade_{}.fasta".format( i ) ) )]
@@ -37,6 +39,7 @@ if __name__ == "__main__":
     parser.add_argument( "-l", "--lineages", help="location" )
     parser.add_argument( "-c", "--clades", nargs="+", help="modifier" )
     parser.add_argument( "-o", "--output", help="location" )
+    parser.add_argument( "-r", "--root", nargs="+", help="sequences to include in everytree as a root" )
 
     arguments = parser.parse_args()
     split_clades( arguments )

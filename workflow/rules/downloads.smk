@@ -26,6 +26,6 @@ rule download_mask:
         vcf = "resources/mask.vcf"
     shell:
         """
-        curl https://raw.githubusercontent.com/W-L/ProblematicSites_SARS-CoV2/master/problematic_sites_sarsCov2.vcf
+        curl https://raw.githubusercontent.com/watronfire/ProblematicSites_SARS-CoV2/master/problematic_sites_sarsCov2.vcf
             --output {output.vcf}
         """
