@@ -107,8 +107,9 @@ if __name__ == "__main__":
                "name"]]
 
     gisaid_md = gisaid_md.set_index( "name" )
-
-    search_md = pd.read_csv( os.path.join( args.search, "metadata.csv" ), encoding="ascii" )
+    
+    with open( os.path.join( args.search, "metadata.csv" ), "r", encoding="ascii", errors="ignore" ) as temp_md:
+        search_md = pd.read_csv( temp_md )
 
     # Determine Country, division, and location
     search_md[["country","division", "location"]] = search_md["location"].str.split( "/", expand=True )

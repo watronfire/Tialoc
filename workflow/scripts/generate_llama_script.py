@@ -12,8 +12,6 @@ export LC_ALL=en_US.UTF-8
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate llama
 
-rm /gpfs/home/natem/logs/llama.txt
-
 cd {outdir}
 llama \
     --input data-dir/query.csv \

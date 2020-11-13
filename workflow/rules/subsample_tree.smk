@@ -94,7 +94,8 @@ rule build_clade_tree:
             --method "iqtree" \
             --output {output.tree} \
             --substitution-model {config[build_tree][model]} \
-            --nthreads 16
+            --nthreads 16 \
+            --tree-builder-args='-o {config[build_tree][outgroup]}'
         """
 
 
@@ -111,7 +112,8 @@ rule build_whole_tree:
             --method "iqtree" \
             --output {output.tree} \
             --substitution-model {config[build_tree][model]} \
-            --nthreads 16
+            --nthreads 16 \
+            --tree-builder-args='-o {config[build_tree][outgroup]}'
         """
 
 rule collapse_polytomies_alt:
