@@ -21,7 +21,9 @@ def split_clades( args ):
     for i in args.clades:
         with tempfile.NamedTemporaryFile( suffix=".txt", mode="w+", delete=False ) as temp_clade:
             entries = lineages.loc[lineages["group"]==i,"taxon"].to_list()
-            entries.extend( args.root )
+            entries.append( "CHN/Hubei-Wuhan/MN908947.3/2019-12-26" )
+            entries.append( "CHN/Hubei-Wuhan/LR757998.1/2019-12-26" )
+            entries = list( set( entries ) )
             temp_clade.write( "\n".join( entries ) )
 
 

@@ -33,7 +33,6 @@ rule extract_llama_output:
         # load sequences
         with open( input.sequences, "r" ) as seq_file:
             seqs = [line.strip() for line in seq_file]
-        seqs.extend( config["extract_llama_output"]["include"].split( " " ) )
 
         md = pd.read_csv( str( input.metadata ), sep="\t" )
         md = md.loc[md["strain"].isin( seqs )]
@@ -76,7 +75,6 @@ rule split_lineages:
             --alignment {input.alignment} \
             --lineages {input.lineages} \
             --clades {config[clades]} \
-            --root {config[extract_llama_output][include]} \
             --output {params.outdir}
         """
 
@@ -85,8 +83,10 @@ rule build_clade_tree:
     message: "Generate tree from llama subsampling"
     input:
         alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" )
+    params:
+        outgroup = config["build_tree"]["outgroup"].replace( "/", "_X_X_" )
     output:
-        tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree.newick" ),
+        tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree.newick" )
     shell:
         """
         augur tree \
@@ -95,7 +95,7 @@ rule build_clade_tree:
             --output {output.tree} \
             --substitution-model {config[build_tree][model]} \
             --nthreads 16 \
-            --tree-builder-args='-o {config[build_tree][outgroup]}'
+            --tree-builder-args='-o {params.outgroup}'
         """
 
 
@@ -103,8 +103,10 @@ rule build_whole_tree:
     message: "Generate tree from llama subsampling"
     input:
         alignment = rules.extract_llama_output.output.subsampled_alignment
+    params:
+        outgroup = config["build_tree"]["outgroup"].replace( "/", "_X_X_" )
     output:
-        tree = os.path.join( config["output"], "output/subsampled_tree.newick" ),
+        tree = os.path.join( config["output"], "output/subsampled_tree.newick" )
     shell:
         """
         augur tree \
@@ -113,7 +115,7 @@ rule build_whole_tree:
             --output {output.tree} \
             --substitution-model {config[build_tree][model]} \
             --nthreads 16 \
-            --tree-builder-args='-o {config[build_tree][outgroup]}'
+            --tree-builder-args='-o {params.outgroup}'
         """
 
 rule collapse_polytomies_alt:

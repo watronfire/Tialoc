@@ -1,7 +1,7 @@
 # Because llama cannot be run within the snakemake pipeline we must split it up into two parts.
 # 'prepare' will generate the files necessary to run llama
 # 'subsample' will process the output of llama and generate output files.
-function: "prepare"
+function: "subsample"
 output: "/gpfs/home/natem/analysis/2020.10.30_hcov"
 gisaid_seqs: "/gpfs/home/natem/analysis/2020.10.30_hcov/sequences_2020-11-12_07-33.fasta"
 gisaid_md: "/gpfs/home/natem/analysis/2020.10.30_hcov/metadata_2020-11-12_10-27.tsv"

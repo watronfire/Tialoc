@@ -259,6 +259,8 @@ def parse_llama_output( args ):
     print( "{} sequences will be included from closest_in_db.csv".format( len( closest_in_db ) ) )
 
     keep.extend( closest_in_db )
+    keep.append( "CHN/Hubei-Wuhan/MN908947.3/2019-12-26" )
+    keep.append( "CHN/Hubei-Wuhan/LR757998.1/2019-12-26" )
     unique_keep = list( set( keep ) )
 
     with open( args.output, "w" ) as outputfile:
