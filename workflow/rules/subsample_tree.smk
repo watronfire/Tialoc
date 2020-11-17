@@ -106,7 +106,7 @@ rule build_whole_tree:
     params:
         outgroup = config["build_tree"]["outgroup"].replace( "/", "_X_X_" )
     output:
-        tree = os.path.join( config["output"], "output/subsampled_tree.newick" )
+        tree = os.path.join( config["output"], "output/ml_trees/subsampled_tree.newick" )
     shell:
         """
         augur tree \
@@ -137,7 +137,7 @@ rule clock_rate_filter:
     input:
          tree = rules.collapse_polytomies_alt.output.collapsed_tree
     output:
-        filtered_tree = os.path.join( config["output"], "output/subsampled_{clade}_tree.newick" )
+        filtered_tree = os.path.join( config["output"], "output/ml_trees/subsampled_{clade}_tree.newick" )
     shell:
         """
         {python} workflow/scripts/clock_filter.py \
