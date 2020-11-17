@@ -9,7 +9,8 @@ def load_clades( lineages, clades ):
     df = pd.read_csv( lineages )
     df["group"] = "?"
     for i in clades:
-        df.loc[df["lineage"].str.startswith( i ),"group"] = i
+        df.loc[df["lineage"] == i,"group"] = i
+        df.loc[df["lineage"].str.startswith( i + "." ),"group"] = i
     return df
 
 
