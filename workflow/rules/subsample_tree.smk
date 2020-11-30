@@ -80,7 +80,7 @@ rule split_lineages:
 
 
 rule build_clade_tree:
-    message: "Generate tree from llama subsampling"
+    message: "Generate tree from llama subsampling: {wildcards.clade}"
     input:
         alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" )
     params:
@@ -119,7 +119,7 @@ rule build_whole_tree:
         """
 
 rule collapse_polytomies_alt:
-    message: "Collapse polytomies in IQTree output"
+    message: "Collapse polytomies in IQTree output: {wildcards.clade}."
     input:
         tree = rules.build_clade_tree.output.tree
     output:
@@ -133,9 +133,9 @@ rule collapse_polytomies_alt:
          """
 
 rule clock_rate_filter:
-    message: "remove tips from tree which violate infered or specified clock rate"
+    message: "remove tips from tree which violate infered or specified clock rate: {wildcards.clade}"
     input:
-         tree = rules.collapse_polytomies_alt.output.collapsed_tree
+        tree = rules.collapse_polytomies_alt.output.collapsed_tree
     output:
         filtered_tree = os.path.join( config["output"], "output/ml_trees/subsampled_{clade}_tree.newick" )
     shell:
@@ -145,4 +145,29 @@ rule clock_rate_filter:
             --clock-rate {config[clock_rate_filter][clock_rate]} \
             --iqd {config[clock_rate_filter][iqd]} \
             --output {output.filtered_tree}
+        """
+
+rule resolve_polytomies:
+    message: "Resolve output tree into a strickly bifurcating tree for beast: {wildcards.clade}"
+    input:
+        tree = rules.clock_rate_filter.output.filtered_tree
+    output:
+        bi_tree = os.path.join( config["output"], "temp/subsampled_{clade}_tree.bifurcating.newick" )
+    script:
+        "../scripts/resolve_polytomies.R"
+
+
+rule generate_nexus:
+    message: "Combine output alignment and bifuricating tree into nexus format for beast: {wildcards.clade}"
+    input:
+        tree = rules.resolve_polytomies.output.bi_tree,
+        alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" )
+    output:
+        nexus_file = os.path.join( config["output"], "beast_input/clade_{clade}.nexus" )
+    shell:
+        """
+        {python} workflow/scripts/generate_nexus.py \
+            --tree {input.tree} \
+            --alignment {input.alignment} \
+            --output {output.nexus_file}
         """

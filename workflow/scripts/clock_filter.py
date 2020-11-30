@@ -56,7 +56,7 @@ def prune_clock_outliers( tree, iqd=3, clock_rate=None ):
 
 def main( args ):
 
-    tree = Tree.get( path=args.input, schema="newick" )
+    tree = Tree.get( path=args.input, schema="newick", preserve_underscores=True )
 
     tree = prune_clock_outliers( tree, iqd=args.iqd, clock_rate=args.clock_rate )
 

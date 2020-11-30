@@ -14,6 +14,10 @@ def determine_function( wildcards ):
                        os.path.join( config["output"], "output/subsampled_metadata.csv"),
                        os.path.join( config["output"], "output/subsampled_alignment.fasta")]
         return_list.extend( expand( os.path.join( config["output"], "output/ml_trees/subsampled_{clade}_tree.newick" ), clade=config["clades"] ) )
+
+        if config["generate_beast"]:
+            return_list.extend( expand( os.path.join( config["output"], "beast_input/clade_{clade}.nexus" ), clade=config["clades"] ) )
+
         return return_list
 
 

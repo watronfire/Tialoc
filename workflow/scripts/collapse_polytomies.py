@@ -3,7 +3,6 @@ from dendropy import Tree
 
 def collapse_polytomies( input_tree, limit, output ):
 
-
     count = 0
 
     bl = [i.edge_length for i in input_tree.internal_nodes()]
@@ -22,9 +21,9 @@ def collapse_polytomies( input_tree, limit, output ):
 
 def main( arguments ):
     if arguments.url:
-        tree = Tree().get( url=arguments.url, schema="newick" )
+        tree = Tree().get( url=arguments.url, schema="newick", preserve_underscores=True )
     elif arguments.path:
-        tree = Tree().get( path=arguments.path, schema="newick" )
+        tree = Tree().get( path=arguments.path, schema="newick", preserve_underscores=True )
     else:
         raise ValueError( "No input argument found. Please specify either --url or --path" )
 

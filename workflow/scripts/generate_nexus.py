@@ -18,7 +18,7 @@ def load_tree( loc, align_ns, verbose=True ):
     if verbose:
         print( "Loading tree... ", end="" )
     
-    tree = dendropy.Tree.get( path=loc, schema="newick" )
+    tree = dendropy.Tree.get( path=loc, schema="newick", preserve_underscores=True )
 
     if verbose:
         print( "Done" )
