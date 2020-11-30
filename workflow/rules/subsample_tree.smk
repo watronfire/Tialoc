@@ -161,13 +161,18 @@ rule generate_nexus:
     message: "Combine output alignment and bifuricating tree into nexus format for beast: {wildcards.clade}"
     input:
         tree = rules.resolve_polytomies.output.bi_tree,
-        alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" )
+        alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" ),
+        metadata = rules.extract_llama_output.output.subsampled_metadata
     output:
-        nexus_file = os.path.join( config["output"], "beast_input/clade_{clade}.nexus" )
+        nexus_file = os.path.join( config["output"], "beast_input/clade_{clade}.nexus" ),
+        traits = os.path.join( config["output"], "beast_input/clade_{clade}_traits.tsv" )
     shell:
         """
         {python} workflow/scripts/generate_nexus.py \
             --tree {input.tree} \
             --alignment {input.alignment} \
-            --output {output.nexus_file}
+            --metadata {input.metadata} \
+            --fields search \
+            --output {output.nexus_file} \
+
         """

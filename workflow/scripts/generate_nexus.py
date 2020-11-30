@@ -1,6 +1,7 @@
 import dendropy
 import argparse
 import numpy as np
+import pandas as pd
 
 
 def load_alignment( loc, verbose=True ):
@@ -46,16 +47,37 @@ def filter_alignment( align, tree, verbose=True ):
     if verbose:
         print( "Done" )
 
-    return align 
-    
+    return align
+
+## This works but BEAUTI cannot parse.
+def add_metadata( tree, metadata, fields ):
+    for leaf in tree.leaf_node_iter():
+        entry = metadata.loc[leaf.taxon.label]
+        comment = []
+        for f in fields:
+            leaf.annotations.add_new( f, entry[f] )
+
+def extract_traits( tree, md_loc, fields, output ):
+    metadata = pd.read_csv( md_loc, usecols=["strain"] + fields )
+    metadata =
+
+    tree_labels = [i.label for i in tree.taxon_namespace]
+
+    metadata = metadata.loc[metadata["strain"].isin( tree_labels )]
+    metadata = metadata.set_index( "strain" )
+
+    metadata.to_csv( output.replace( ".nexus", "_traits.tsv" ), sep="\t" )
 
 def merge_tree_align( args ):
     a = load_alignment( args.alignment )
 
     t = load_tree( args.tree, a.taxon_namespace )
 
+    if args.fields is not None:
+        extract_traits( t, args.metadata, args.fields, args.output )
+
     a = filter_alignment( a, t )
-    
+
     starting_size = len( t.taxon_namespace )
 
     tl = dendropy.TreeList( [t] )
@@ -74,6 +96,8 @@ if __name__ == "__main__":
     # Input arguments
     parser.add_argument( "-a", "--alignment", required=True, help="input alignment in fasta format" )
     parser.add_argument( "-t", "--tree", required=True, help="input tree in newick format" )
+    parser.add_argument( "-m", "--metadata", required=False, help="metadata file for tips in tree" )
+    parser.add_argument( "-f", "--fields", nargs="+", help="metadata fields to append to tree" )
     
     # Output arguments
     parser.add_argument( "-o", "--output", required=True, help="output nexus file" )
