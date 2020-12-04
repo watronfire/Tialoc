@@ -88,21 +88,29 @@ rule align:
         """
     input:
         sequences = rules.filter.output.sequences,
+        reference = config["reference"]
     output:
+        sam_file = temp( os.path.join( config["output"], "aligned.sam" ) ),
         alignment = os.path.join( config["output"], "aligned.fasta" )
-    params:       
-        alignment_folder = os.path.join( config["output"], "alignment/" ),
-        temp_alignment = os.path.join( config["output"], "alignment/filtered.fasta.aln" )
+    params:
+        trim_start = config["align"]["trim_start"],
+        trim_end = config["align"]["trim_end"]
     threads: 16
     shell:
         """
-        ViralMSA.py \
-            -s {input.sequences} \
-            -r {config[reference]} \
-            -e {config[email]} \
-            -o {params.alignment_folder} \
-            -t {threads} &&
-        mv {params.temp_alignment} {output.alignment}
+        minimap2 \
+            -a -x asm5 \
+            -t {threads}
+            {input.reference} \
+            {input.sequences} \
+            -o {output.sam_file} &&
+        datafunk sam_2_fasta \
+          -s {output.sam_file} \
+          -r {input.reference} \
+          -o {output.alignment} \
+          -t [{params.trim_start}:{params.trim_end}] \
+          --pad \
+          --log-inserts 
         """
 
 
