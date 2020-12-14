@@ -59,7 +59,6 @@ def add_metadata( tree, metadata, fields ):
 
 def extract_traits( tree, md_loc, fields, output ):
     metadata = pd.read_csv( md_loc, usecols=["strain"] + fields )
-    metadata =
 
     tree_labels = [i.label for i in tree.taxon_namespace]
 

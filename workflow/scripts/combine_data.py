@@ -235,7 +235,8 @@ if __name__ == "__main__":
 
     # Add search Metadata
     combined_md["search"] = "Other"
-    combined_md.loc[combined_md["country"]=="Mexico","search"] = "Mexico"
+    combined_md.loc[combined_md["country"] == "Mexico","search"] = "Mexico"
+    combined_md.loc[combined_md["country"] == "USA", "search"] = "USA"
     combined_md.loc[combined_md["division"] == "BajaCalifornia", "search"] = "Baja California"
     combined_md.loc[combined_md["division"] == "Baja California", "search"] = "Baja California"
     combined_md.loc[combined_md["division"] == "California", "search"] = "California"

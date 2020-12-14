@@ -3,6 +3,7 @@
 
 conda deactivate
 module load python/3.6.3
+module load R
 
 export AUGUR_RECURSION_LIMIT=3000
 
