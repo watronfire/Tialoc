@@ -2,12 +2,12 @@
 # 'prepare' will generate the files necessary to run llama
 # 'subsample' will process the output of llama and generate output files.
 function: "subsample"
-output: "/Users/natem/Data/pipeline_temp/output"
+output: "/gpfs/home/natem/analysis/2020.10.30_hcov"
 gisaid_seqs: "/gpfs/home/natem/analysis/2020.10.30_hcov/sequences_2020-11-12_07-33.fasta"
 gisaid_md: "/gpfs/home/natem/analysis/2020.10.30_hcov/metadata_2020-11-12_10-27.tsv"
 include: "resources/include_mb.txt"
 exclude: "resources/exclude.txt"
-reference: "MN908947"
+reference: "resources/reference.fasta"
 email: "natem@scripps.edu"
 focus: "division:California,Arizona,Texas,New Mexico;country:Mexico"
 clades:
@@ -27,8 +27,10 @@ filter:
   sequences_per_group: 2000
   min_date: "2019-12-01"
 
-partition_sequences:
-  sequences_per_group: 300
+
+align:
+  trim_start: 265
+  trim_end: 29674
 
 mask:
   vcf: "resources/mask.vcf"

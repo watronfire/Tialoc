@@ -90,22 +90,32 @@ rule align:
         sequences = rules.filter.output.sequences,
         reference = config["reference"]
     output:
-        sam_file = temp( os.path.join( config["output"], "aligned.sam" ) ),
-        alignment = os.path.join( config["output"], "aligned.fasta" )
-    params:
-        trim_start = config["align"]["trim_start"],
-        trim_end = config["align"]["trim_end"]
+        sam_file = temp( os.path.join( config["output"], "aligned.sam" ) )
     threads: 16
     shell:
         """
         minimap2 \
             -a -x asm5 \
-            -t {threads}
+            -t {threads} \
             {input.reference} \
             {input.sequences} \
-            -o {output.sam_file} &&
+            -o {output.sam_file}
+        """
+
+rule sam_2_fasta:
+    input:
+        sam = rules.align.output.sam_file,
+        reference = config["reference"]
+    message: "Running datafunk to trim and pad against the reference"
+    params:
+        trim_start = config["align"]["trim_start"],
+        trim_end = config["align"]["trim_end"]
+    output:
+        alignment = os.path.join(config["output"],"aligned.fasta")
+    shell:
+        """
         datafunk sam_2_fasta \
-          -s {output.sam_file} \
+          -s {input.sam} \
           -r {input.reference} \
           -o {output.alignment} \
           -t [{params.trim_start}:{params.trim_end}] \
@@ -120,7 +130,7 @@ rule mask:
         Mask bases in alignment based on provided VCF. Based on VCF provided by De Maio et al. at https://virological.org/t/masking-strategies-for-sars-cov-2-alignments/
         """
     input:
-        alignment = rules.align.output.alignment,
+        alignment = rules.sam_2_fasta.output.alignment,
         mask = rules.download_mask.output.vcf
     output:
         alignment = os.path.join( config["output"], "masked.fasta" )
