@@ -9,6 +9,11 @@ def load_alignment( loc, verbose=True ):
         print( "Loading alignment... ", end="" )
 
     align = dendropy.DnaCharacterMatrix.get( path=loc, schema="fasta" )
+
+    # For reasons unbenounced to me. Somewhere question marks get replaced with with underscores.
+    for taxa in align.taxon_namespace:
+        taxa.label = taxa.label.replace( "?", "_" )
+
     if verbose:
         print( "Done" )
         print( "Loaded alignment with {} sequences".format( len( align.taxon_namespace ) ) )
@@ -59,6 +64,9 @@ def add_metadata( tree, metadata, fields ):
 
 def extract_traits( tree, md_loc, fields, output ):
     metadata = pd.read_csv( md_loc, usecols=["strain"] + fields )
+
+    # TODO: this is a brute fix to a larger problem involving special characters in strain names
+    metadata["strain"] = metadata["strain"].apply( lambda x: x.replace( "?", "_" ) )
 
     tree_labels = [i.label for i in tree.taxon_namespace]
 

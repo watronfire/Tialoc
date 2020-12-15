@@ -27,7 +27,6 @@ filter:
   sequences_per_group: 2000
   min_date: "2019-12-01"
 
-
 align:
   trim_start: 265
   trim_end: 29674
