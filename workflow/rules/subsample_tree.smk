@@ -171,7 +171,10 @@ rule resolve_polytomies:
     output:
         bi_tree = os.path.join( config["output"], "temp/subsampled_{clade}_tree.bifurcating.newick" )
     script:
-        "../scripts/resolve_polytomies.R"
+        """
+        module load R &&
+        Rscript workflow/scripts/resolve_polytomies.R {input.tree} {output.bi_tree} 
+        """
 
 
 rule generate_nexus:
