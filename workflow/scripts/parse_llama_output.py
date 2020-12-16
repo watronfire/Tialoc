@@ -1,12 +1,10 @@
 import argparse
 from functools import reduce
-from collections import Counter
 from dendropy import Tree
 import pandas as pd
 import os
 from fnmatch import fnmatch
 import re
-
 
 """
 Pipeline steps:
@@ -29,6 +27,7 @@ def load_metadata( file ):
     return_df = pd.read_csv( file, usecols=use_cols )
     return_df = return_df.set_index( "strain" )
     return return_df
+
 
 def load_collapsed_nodes( file ):
     cn = { "name":[], "node":[], "date":[] }
@@ -54,7 +53,6 @@ def load_collapsed_nodes( file ):
     cn["location"] = cn["name"].apply( lambda x: x.split( "/" )[1] )
     cn[["division","location"]] = cn["location"].str.split( "-", n=1, expand=True )
 
-    #print( cn["node"].value_counts().head(50) )
     print( cn.loc[cn["node"]=="collapsed_1267", "country"].value_counts() )
 
 
@@ -223,10 +221,6 @@ def parse_llama_output( args ):
     catchment_trees = [i for i in os.listdir( os.path.join( args.llama, "catchment_trees") ) if fnmatch( i, "localsubtree_*.newick")]
     catchment_trees = map( lambda x: Tree.get( path=os.path.join( args.llama, "catchment_trees", x ), schema="newick", label=x ), catchment_trees )
 
-    # Load in collapsed nodes
-    # TODO: still not clear what needs to be done here. Collapsed nodes don't seem to be that relevent so I'll hold off for now.
-    #localcollapsed_nodes = load_collapsed_nodes( os.path.join( args.llama, "catchment_trees/localcollapsed_nodes.csv" ) )
-
     # Load in closes_in_db
     closest_in_db = pd.read_csv( os.path.join( args.llama, "closest_in_db.csv" ), usecols=["strain"] )
     closest_in_db = closest_in_db["strain"].to_list()
@@ -275,6 +269,7 @@ if __name__ == "__main__":
     parser.add_argument( "-l", "--llama", help="location of llama output" )
     parser.add_argument( "-o", "--output", help="location to save list of subsampled sequences" )
     parser.add_argument( "-m", "--metadata", nargs='+', help="metadata for all sequences present. Can provide list." )
+    parser.add_argument( "-p", "--preset", type=int, default=1, help="Specify how conservative the pruning should be." )
 
     arguments = parser.parse_args()
 
