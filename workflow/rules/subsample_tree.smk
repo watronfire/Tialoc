@@ -137,7 +137,7 @@ rule clock_rate_filter:
     input:
         tree = rules.collapse_polytomies_alt.output.collapsed_tree
     output:
-        filtered_tree = os.path.join( config["output"], "output/ml_trees/subsampled_{clade}_tree.newick" )
+        filtered_tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree_filtered.newick" )
     shell:
         """
         {python} workflow/scripts/clock_filter.py \
@@ -147,10 +147,27 @@ rule clock_rate_filter:
             --output {output.filtered_tree}
         """
 
+
+rule second_pruning:
+    message: "Subject tips which were added after llama output parsing to pruning: {wildcards.clade}"
+    input:
+        tree = rules.clock_rate_filter.output.filtered_tree,
+        metadata = rules.extract_llama_output.output.subsampled_metadata,
+    output:
+        pruned_tree = os.path.join( config["output"], "output/ml_trees/subsampled_{clade}_tree.newick" )
+    shell:
+        """
+        {python} workflow/script/prune_interest.py \
+            --tree {input.tree} \
+            --metadata {input.metadata} \
+            --output {output.pruned_tree}
+        """
+
+
 rule resolve_polytomies:
     message: "Resolve output tree into a strickly bifurcating tree for beast: {wildcards.clade}"
     input:
-        tree = rules.clock_rate_filter.output.filtered_tree
+        tree = rules.second_pruning.output.pruned_tree
     output:
         bi_tree = os.path.join( config["output"], "temp/subsampled_{clade}_tree.bifurcating.newick" )
     script:
@@ -164,8 +181,8 @@ rule generate_nexus:
         alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" ),
         metadata = rules.extract_llama_output.output.subsampled_metadata
     output:
-        nexus_file = os.path.join( config["output"], "beast_input/clade_{clade}.nexus" ),
-        traits = os.path.join( config["output"], "beast_input/clade_{clade}_traits.tsv" )
+        nexus_file = os.path.join( config["output"], "output/beast_input/clade_{clade}.nexus" ),
+        traits = os.path.join( config["output"], "output/beast_input/clade_{clade}_traits.tsv" )
     shell:
         """
         {python} workflow/scripts/generate_nexus.py \
