@@ -180,7 +180,7 @@ rule resolve_polytomies:
 rule generate_nexus:
     message: "Combine output alignment and bifuricating tree into nexus format for beast: {wildcards.clade}"
     input:
-        tree = rules.resolve_polytomies.output.bi_tree,
+        tree = rules.second_pruning.output.pruned_tree,
         alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" ),
         metadata = rules.extract_llama_output.output.subsampled_metadata
     output:
