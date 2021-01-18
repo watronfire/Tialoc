@@ -1,6 +1,6 @@
 import argparse
 from dendropy import Tree
-from workflow.scripts.parse_llama_output import load_metadata, add_location_fields, prune_redundant_leaves, subsample_monophylics
+from parse_llama_output import load_metadata, add_location_fields, prune_redundant_leaves, subsample_monophylics
 
 
 def main( args ):

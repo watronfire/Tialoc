@@ -75,13 +75,16 @@ def extract_traits( tree, md_loc, fields, output ):
 
     metadata.to_csv( output.replace( ".nexus", "_traits.tsv" ), sep="\t" )
 
+    return metadata
+
 def merge_tree_align( args ):
     a = load_alignment( args.alignment )
 
     t = load_tree( args.tree, a.taxon_namespace )
 
     if args.fields is not None:
-        extract_traits( t, args.metadata, args.fields, args.output )
+        md = extract_traits( t, args.metadata, args.fields, args.output )
+        add_metadata( t, md, args.fields )
 
     a = filter_alignment( a, t )
 

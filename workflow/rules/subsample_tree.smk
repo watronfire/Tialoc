@@ -157,7 +157,7 @@ rule second_pruning:
         pruned_tree = os.path.join( config["output"], "output/ml_trees/subsampled_{clade}_tree.newick" )
     shell:
         """
-        {python} workflow/script/prune_interest.py \
+        {python} workflow/scripts/prune_interest.py \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --output {output.pruned_tree}
@@ -170,7 +170,7 @@ rule resolve_polytomies:
         tree = rules.second_pruning.output.pruned_tree
     output:
         bi_tree = os.path.join( config["output"], "temp/subsampled_{clade}_tree.bifurcating.newick" )
-    script:
+    shell:
         """
         module load R &&
         Rscript workflow/scripts/resolve_polytomies.R {input.tree} {output.bi_tree} 
