@@ -21,22 +21,6 @@
 		{% endfor %}
 	</taxa>
 
-	<!-- The sequence alignment (each sequence refers to a taxon above).         -->
-	<!-- ntax={{ taxon_count }} nchar=Z                                -->
-	<alignment id="alignment" dataType="nucleotide">
-		{% for taxon in taxa.values() %}
-		<sequence>
-			<taxon idref="{{ taxon.id }}"/>
-			{{ taxon.sequence }}
-		</sequence>
-		{% endfor %}
-	</alignment>
-
-	<!-- The unique patterns from 1 to end                                       -->
-	<patterns id="patterns" from="1" strip="false">
-		<alignment idref="alignment"/>
-	</patterns>
-
 	<!-- START Discrete Traits Model                                             -->
 
 	<!-- general data type for discrete trait model, 'search'                    -->
@@ -82,20 +66,19 @@
 			{{ tree }}
 		</newick>
 	</rescaledTree>
+	<newick id="dataTree" usingDates="false" usingHeights="true">
+		{{ tree }}
+	</newick>
 
 	<!-- Generate a tree model                                                   -->
-	<treeModel id="treeModel">
+	<bigFastTreeModel id="treeModel">
 		<tree idref="startingTree"/>
-		<rootHeight>
-			<parameter id="treeModel.rootHeight"/>
-		</rootHeight>
-		<nodeHeights internalNodes="true">
-			<parameter id="treeModel.internalNodeHeights"/>
-		</nodeHeights>
-		<nodeHeights internalNodes="true" rootNode="true">
-			<parameter id="treeModel.allInternalNodeHeights"/>
-		</nodeHeights>
-	</treeModel>
+	</bigFastTreeModel>
+
+	<!-- Statistic for root height of the tree       -->
+	<treeHeightStatistic id="treeModel.rootHeight">
+		<treeModel idref="treeModel"/>
+	</treeHeightStatistic>
 
 	<!-- Statistic for sum of the branch lengths of the tree (tree length)       -->
 	<treeLengthStatistic id="treeLength">
@@ -107,77 +90,39 @@
 		<treeModel idref="treeModel"/>
 	</tmrcaStatistic>
 
+
+	<constrainedTreeModel id="constrainedTreeModel">
+		<treeModel idref="treeModel"/>
+		<constraintsTree>
+			<tree idref="dataTree"/>
+		</constraintsTree>
+	</constrainedTreeModel>
+
 	<!-- Generate a coalescent likelihood                                        -->
 	<coalescentLikelihood id="coalescent">
 		<model>
 			<exponentialGrowth idref="exponential"/>
 		</model>
-		<populationTree>
-			<treeModel idref="treeModel"/>
-		</populationTree>
+		<intervals>
+			<bigFastTreeIntervals>
+				<treeModel idref="treeModel"/>
+			</bigFastTreeIntervals>
+		</intervals>
 	</coalescentLikelihood>
 
-	<!-- The strict clock (Uniform rates across branches)                        -->
-	<strictClockBranchRates id="default.branchRates">
-		<rate>
-			<parameter id="default.clock.rate" value="8.0E-4" lower="0.0"/>
-		</rate>
-	</strictClockBranchRates>
+	<thorneyTreeLikelihood id="treeLikelihood">
+		<constrainedTreeModel idref="constrainedTreeModel"/>
+		<strictClockBranchLengthLikelihood id="branchLengthLikelihood" scale="{{ site_count }}">
+			<parameter id="clock.rate" value="0.0008" lower="0.0"/>
+		</strictClockBranchLengthLikelihood>
 
-	<rateStatistic id="default.meanRate" name="default.meanRate" mode="mean" internal="true" external="true">
-		<treeModel idref="treeModel"/>
-		<strictClockBranchRates idref="default.branchRates"/>
-	</rateStatistic>
-
-
-	<!-- The strict clock (Uniform rates across branches)                        -->
-	<strictClockBranchRates id="search.branchRates">
-		<rate>
-			<parameter id="search.clock.rate" value="0.419" lower="0.0"/>
-		</rate>
-	</strictClockBranchRates>
-
-	<rateStatistic id="search.meanRate" name="search.meanRate" mode="mean" internal="true" external="true">
-		<treeModel idref="treeModel"/>
-		<strictClockBranchRates idref="search.branchRates"/>
-	</rateStatistic>
-
-	<!-- The HKY substitution model (Hasegawa, Kishino & Yano, 1985)             -->
-	<HKYModel id="hky">
-		<frequencies>
-			<frequencyModel dataType="nucleotide">
-				<alignment idref="alignment"/>
-				<frequencies>
-					<parameter id="frequencies" dimension="4"/>
-				</frequencies>
-			</frequencyModel>
-		</frequencies>
-		<kappa>
-			<parameter id="kappa" value="6.0" lower="0.0"/>
-		</kappa>
-	</HKYModel>
-
-	<!-- site model                                                              -->
-	<siteModel id="siteModel">
-		<substitutionModel>
-			<HKYModel idref="hky"/>
-		</substitutionModel>
-	</siteModel>
-
-	<!--                                                                         -->
-	<statistic id="mu" name="mu">
-		<siteModel idref="siteModel"/>
-	</statistic>
-
-	<!-- Likelihood for tree given sequence data                                 -->
-	<treeDataLikelihood id="default.treeLikelihood" useAmbiguities="false">
-		<partition>
-			<patterns idref="patterns"/>
-			<siteModel idref="siteModel"/>
-		</partition>
-		<treeModel idref="treeModel"/>
-		<strictClockBranchRates idref="default.branchRates"/>
-	</treeDataLikelihood>
+		<constrainedBranchLengthProvider scale="{{ site_count }}">
+			<constrainedTreeModel idref="constrainedTreeModel"/>
+			<dataTree>
+				<tree idref="dataTree"/>
+			</dataTree>
+		</constrainedBranchLengthProvider>
+	</thorneyTreeLikelihood>
 
 	<!-- START Discrete Traits Model                                             -->
 
@@ -251,50 +196,51 @@
 
 	<!-- Define operators                                                        -->
 	<operators id="operators" optimizationSchedule="log">
-		<scaleOperator scaleFactor="0.75" weight="1">
-			<parameter idref="kappa"/>
-		</scaleOperator>
+
 		<scaleOperator scaleFactor="0.75" weight="1">
 			<parameter idref="search.clock.rate"/>
 		</scaleOperator>
-		<upDownOperator scaleFactor="0.75" weight="1">
-			<up>
-				<parameter idref="treeModel.allInternalNodeHeights"/>
-			</up>
-			<down>
-				<parameter idref="search.clock.rate"/>
-			</down>
-		</upDownOperator>
-		<subtreeSlide size="1.0" gaussian="true" weight="30">
+
+		<nodeHeightOperator type="uniform" weight="{{ taxon_count / 2 }}">
 			<treeModel idref="treeModel"/>
-		</subtreeSlide>
-		<narrowExchange weight="30">
+		</nodeHeightOperator>
+
+		<nodeHeightOperator type="scaleRoot" weight="{{ taxon_count / 10 }}" scaleFactor="0.75" >
 			<treeModel idref="treeModel"/>
+		</nodeHeightOperator>
+
+		<uniformSubtreePruneRegraft weight="{{ taxon_count / 2 }}">
+			<constrainedTreeModel idref="constrainedTreeModel"/>
+		</uniformSubtreePruneRegraft>
+
+		<narrowExchange weight="{{ taxon_count / 10 }}">
+			<constrainedTreeModel idref="constrainedTreeModel"/>
 		</narrowExchange>
-		<wideExchange weight="3">
-			<treeModel idref="treeModel"/>
+
+		<wideExchange weight="{{ taxon_count / 10 }}">
+			<constrainedTreeModel idref="constrainedTreeModel"/>
 		</wideExchange>
-		<wilsonBalding weight="3">
-			<treeModel idref="treeModel"/>
+
+		<wilsonBalding weight="{{ taxon_count / 10 }}">
+			<constrainedTreeModel idref="constrainedTreeModel"/>
 		</wilsonBalding>
-		<scaleOperator scaleFactor="0.75" weight="3">
-			<parameter idref="treeModel.rootHeight"/>
-		</scaleOperator>
-		<uniformOperator weight="30">
-			<parameter idref="treeModel.internalNodeHeights"/>
-		</uniformOperator>
+
 		<scaleOperator scaleFactor="0.75" weight="3">
 			<parameter idref="exponential.popSize"/>
 		</scaleOperator>
+
 		<randomWalkOperator windowSize="1.0" weight="3">
 			<parameter idref="exponential.growthRate"/>
 		</randomWalkOperator>
+
 		<scaleOperator scaleFactor="0.75" weight="3" scaleAllIndependently="true">
 			<parameter idref="search.rates"/>
 		</scaleOperator>
+
 		<bitFlipOperator weight="5">
 			<parameter idref="search.indicators"/>
 		</bitFlipOperator>
+
 		<deltaExchange delta="0.75" weight="1">
 			<parameter idref="search.root.frequencies"/>
 		</deltaExchange>
@@ -305,9 +251,6 @@
 	<mcmc id="mcmc" chainLength="{{ chain_length }}" autoOptimize="true" operatorAnalysis="{{ stem }}.ops">
 		<joint id="joint">
 			<prior id="prior">
-				<logNormalPrior mu="1.0" sigma="1.25" offset="0.0">
-					<parameter idref="kappa"/>
-				</logNormalPrior>
 				<ctmcScalePrior>
 					<ctmcScale>
 						<parameter idref="default.clock.rate"/>
@@ -354,7 +297,7 @@
 
 			</prior>
 			<likelihood id="likelihood">
-				<treeDataLikelihood idref="default.treeLikelihood"/>
+				<thorneyTreeLikelihood idref="treeLikelihood"/>
 
 				<!-- START Discrete Traits Model                                             -->
 				<markovJumpsTreeLikelihood idref="search.treeLikelihood"/>
@@ -379,9 +322,6 @@
 			<column label="age(root)" sf="6" width="12">
 				<tmrcaStatistic idref="age(root)"/>
 			</column>
-			<column label="default.clock.rate" sf="6" width="12">
-				<parameter idref="default.clock.rate"/>
-			</column>
 			<column label="search.clock.rate" sf="6" width="12">
 				<parameter idref="search.clock.rate"/>
 			</column>
@@ -405,7 +345,6 @@
 			<treeLengthStatistic idref="treeLength"/>
 			<parameter idref="exponential.popSize"/>
 			<parameter idref="exponential.growthRate"/>
-			<parameter idref="kappa"/>
 			<parameter idref="default.clock.rate"/>
 			<parameter idref="search.clock.rate"/>
 			<rateStatistic idref="default.meanRate"/>
@@ -423,7 +362,7 @@
 
 			<!-- END Discrete Traits Model                                               -->
 
-			<treeDataLikelihood idref="default.treeLikelihood"/>
+			<treeDataLikelihood idref="treeLikelihood"/>
 			<strictClockBranchRates idref="default.branchRates"/>
 			<strictClockBranchRates idref="search.branchRates"/>
 

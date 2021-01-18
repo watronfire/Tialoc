@@ -99,16 +99,25 @@ def parse_nexus( nexus_loc ):
     return_dict["tree"] = nexus.tree_lists[0].as_string( "newick" )
 
     count = 0
+
+    max_date = 2020.1
     for k, v in nexus.char_matrices[0].items():
         count += 1
+
+        date = parse_date( k.label )
+        if date > max_date:
+            max_date = date
+
         taxa_dict = { "id" : k.label,
-                      "date" : parse_date( k.label ),
+                      "date" : date,
                       "sequence" : str( v ) }
         return_dict["taxa"][k.label] = taxa_dict
     print( "Done. {} taxa loaded".format( count ) )
 
     return_dict["site_count"] = nexus.char_matrices[0].max_sequence_size
     return_dict["taxon_count"] = len( return_dict["taxa"] )
+    return_dict["cutoff"] = max_date - 2019.75
+    return_dict["grid_points"] = round( return_dict["cutoff"] * 52 )
 
     return return_dict
 
