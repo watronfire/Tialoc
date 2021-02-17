@@ -132,7 +132,11 @@ def add_traits( values_dict, traits_loc, sep="\t" ):
         for line in traits:
             count += 1
             line_split = line.strip().split( sep )
-            values_dict["taxa"][line_split[0]][value] = line_split[1]
+            if line_split[1] == "Imperial":
+                entry = "California"
+            else:
+                entry = line_split[1]
+            values_dict["taxa"][line_split[0]][value] = entry
     print( "Done. {} values added from {}".format( count, traits_loc ) )
 
 
