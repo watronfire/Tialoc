@@ -148,12 +148,15 @@ rule collapse_polytomies:
     group: "tree"
     output:
           collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" )
+    params:
+        # --url {config[collapse_polytomies][tree_url]}
+        tree = os.path.join( config["output"], "tree_whole.newick" )
     shell:
          """
          {python} workflow/scripts/collapse_polytomies.py \
             --limit {config[collapse_polytomies][limit]} \
             --output {output.collapsed_tree} \
-            --url {config[collapse_polytomies][tree_url]}
+            --path {params.tree}
          """
 
 rule prune_tree:

@@ -1,8 +1,8 @@
 # Because llama cannot be run within the snakemake pipeline we must split it up into two parts.
 # 'prepare' will generate the files necessary to run llama
 # 'subsample' will process the output of llama and generate output files.
-function: "subsample"
-output: "/gpfs/home/natem/analysis/2020.10.30_hcov"
+function: "prepare"
+output: "/gpfs/home/natem/analysis/2021.02.16_hcov"
 gisaid_seqs: "/gpfs/home/natem/analysis/2020.10.30_hcov/sequences_2020-11-12_07-33.fasta"
 gisaid_md: "/gpfs/home/natem/analysis/2020.10.30_hcov/metadata_2020-11-12_10-27.tsv"
 include: "resources/include_mb.txt"
@@ -35,7 +35,9 @@ mask:
   vcf: "resources/mask.vcf"
 
 collapse_polytomies:
-  tree_url: "https://raw.githubusercontent.com/roblanf/sarscov2phylo/master/ft_SH.tree"
+  tree_url: "https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_global_tree.newick"
+  # Rob hasn't updated his tree in quite some time, so I'll be using cog-uk's tree. Should work...
+  #tree_url: "https://raw.githubusercontent.com/roblanf/sarscov2phylo/master/ft_SH.tree"
   limit: 0.00003
 
 run_llama:

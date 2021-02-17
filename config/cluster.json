@@ -3,7 +3,7 @@
   {
     "walltime" : "8:00:00",
     "mem" : "8gb",
-    "queue" : "gpu",
+    "queue" : "shared",
     "logfile" : "/gpfs/home/natem/logs/tialoc.txt",
     "n" : 1,
     "stdout" : "oe"
