@@ -147,7 +147,7 @@ rule collapse_polytomies:
     message: "Collapse edges of tree that are indistinguishable from polytomies"
     group: "tree"
     output:
-          collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" )
+        collapsed_tree = os.path.join( config["output"], "tree/collapsed_tree.nwk" )
     params:
         # --url {config[collapse_polytomies][tree_url]}
         tree = os.path.join( config["output"], "tree_whole.newick" )
@@ -157,6 +157,7 @@ rule collapse_polytomies:
             --limit {config[collapse_polytomies][limit]} \
             --output {output.collapsed_tree} \
             --path {params.tree}
+            --rename {config[gisaid_md]}
          """
 
 rule prune_tree:
