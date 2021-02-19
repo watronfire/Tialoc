@@ -16,4 +16,4 @@ snakemake -k -j 50 \
   --snakefile workflow/Snakefile \
   --configfile config/config.yaml \
   --cluster-config config/cluster.json \
-  --cluster "sbatch --time={cluster.walltime} --mem={cluster.mem} -c {cluster.n} --partition={cluster.queue} --output={cluster.logfile}" /gpfs/home/natem/analysis/2021.02.16_hcov/tree/collapsed_tree.nwk
+  --cluster "sbatch --time={cluster.walltime} --mem={cluster.mem} -c {cluster.n} --partition={cluster.queue} --output={cluster.logfile}"

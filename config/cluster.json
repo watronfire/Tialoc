@@ -1,7 +1,7 @@
 {
   "__default__" :
   {
-    "walltime" : "8:00:00",
+    "walltime" : "24:00:00",
     "mem" : "8gb",
     "queue" : "shared",
     "logfile" : "/gpfs/home/natem/logs/tialoc.txt",
@@ -16,7 +16,7 @@
   "prune_tree" : 
   {
     "mem" : "16gb",
-    "walltime" : "12:00:00",
+    "walltime" : "24:00:00",
   },
   "parse_llama_output" :
   {

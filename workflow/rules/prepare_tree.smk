@@ -156,7 +156,7 @@ rule collapse_polytomies:
          {python} workflow/scripts/collapse_polytomies.py \
             --limit {config[collapse_polytomies][limit]} \
             --output {output.collapsed_tree} \
-            --path {params.tree}
+            --path {params.tree} \
             --rename {config[gisaid_md]}
          """
 

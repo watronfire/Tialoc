@@ -38,7 +38,10 @@ def main( args ):
     print( "Renaming leaves to match metadata and alignment... ", end="" )
     leaves = list()
     for i in tree.taxon_namespace:
-        i.label = gisaid_dict[i.label.replace( " ", "_" )]
+        try:
+            i.label = gisaid_dict[i.label.replace( " ", "_" )]
+        except KeyError:
+            pass
         leaves.append( i.label )
     print( "Done" )
 
