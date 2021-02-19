@@ -6,6 +6,6 @@ resolve_polytomies <- function( input, output ) {
   write.tree( t, output )
 }
 
-args = commandArgs(trailingOnly=TRUE)
+args = commandArgs( trailingOnly=TRUE )
 
 resolve_polytomies( args[1], args[2] )

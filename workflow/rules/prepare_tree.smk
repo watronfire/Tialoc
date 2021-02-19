@@ -160,7 +160,31 @@ rule collapse_polytomies:
             --rename {config[gisaid_md]}
          """
 
-rule prune_tree:
+#rule prune_tree:
+#    message: "Prunes input tree to match alignment, metadata, and focus"
+#    group: "align"
+#    input:
+#        tree = rules.collapse_polytomies.output.collapsed_tree,
+#        alignment = rules.mask.output.alignment,
+#        metadata = rules.add_interest.output.metadata
+#    output:
+#        global_tree = os.path.join( config["output"], "data-dir/global.tree" ),
+#        global_alignment = os.path.join( config["output"], "data-dir/alignment.fasta" ),
+#        global_metadata = os.path.join( config["output"], "data-dir/metadata.csv" ),
+#        query_alignment = os.path.join( config["output"], "data-dir/query.fasta" ),
+#        query_metadata = os.path.join( config["output"], "data-dir/query.csv" )
+#    params:
+#        outdir = os.path.join( config["output"], "data-dir" )
+#    shell:
+#        """
+#        {python} workflow/scripts/prune_tree.py \
+#            --tree {input.tree} \
+#            --alignment {input.alignment} \
+#            --metadata {input.metadata} \
+#            --outdir {params.outdir}
+#        """
+
+rule prune_tree_R:
     message: "Prunes input tree to match alignment, metadata, and focus"
     group: "align"
     input:
@@ -177,11 +201,12 @@ rule prune_tree:
         outdir = os.path.join( config["output"], "data-dir" )
     shell:
         """
-        {python} workflow/scripts/prune_tree.py \
-            --tree {input.tree} \
-            --alignment {input.alignment} \
-            --metadata {input.metadata} \
-            --outdir {params.outdir}
+        module load R &&
+        Rscript workflow/scripts/prune_tree.R \
+            {input.tree} \
+            {input.alignment} \
+            {input.metadata} \
+            {params.outdir} 
         """
 
 
