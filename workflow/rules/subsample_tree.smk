@@ -79,25 +79,44 @@ rule split_lineages:
         """
 
 
-rule build_clade_tree:
-    message: "Generate tree from llama subsampling: {wildcards.clade}"
+rule build_clade_tree_fast:
+    message: "Generate treef rom llama subsampling: {wildcards.clade}"
     input:
         alignment = os.path.join( config["output"], "clade_alignment/clade_{clade}.fasta" )
     params:
-        outgroup = config["build_tree"]["outgroup"].replace( "/", "_X_X_" )
+        clade = "{wildcards.clade}"
     output:
-        tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree.newick" )
+        tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree.unrooted.newick" )
+    threads: 16
+    log:
+        os.path.join( config["output"], "logs/build_tree_{clade}.log" )
     shell:
         """
-        augur tree \
-            --alignment {input.alignment} \
-            --method "iqtree" \
-            --output {output.tree} \
-            --substitution-model {config[build_tree][model]} \
-            --nthreads 16 \
-            --tree-builder-args='-o {params.outgroup}'
+        echo "{input.alignment} {params.clade}" &&
+        export OMP_NUM_THREADS={threads} &&
+        module load fasttree &&
+        fasttreemp -nosupport -nt {input.alignment} > {output.tree} 2> {log}
         """
 
+rule root_tree:
+    input:
+        tree = rules.build_clade_tree_fast.output.tree,
+    params:
+        clade = "{wildcard.clade}",
+        outgroup = config["build_tree"]["outgroup"]
+    output:
+        tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree.newick" ),
+    log:
+        os.path.join( config["output"], "logs/root_tree_{clade}.log" ),
+    shell:
+        """
+        echo "{params.clade} {params.outgroup}"
+        jclusterfunk reroot \
+          --format newick \
+          -i {input.tree} \
+          -o {output.tree} \
+          --outgroup {params.outgroup} &>> {log}
+        """
 
 rule build_whole_tree:
     message: "Generate tree from llama subsampling"
@@ -121,7 +140,7 @@ rule build_whole_tree:
 rule collapse_polytomies_alt:
     message: "Collapse polytomies in IQTree output: {wildcards.clade}."
     input:
-        tree = rules.build_clade_tree.output.tree
+        tree = rules.root_tree.output.tree
     output:
         collapsed_tree = os.path.join( config["output"], "clade_trees/subsampled_{clade}_tree_collapsed.newick" )
     shell:

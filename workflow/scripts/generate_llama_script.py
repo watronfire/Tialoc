@@ -1,11 +1,15 @@
 import argparse
 import os
 
-script_template = """
-#!/bin/bash
-#PBS -l walltime=120:00:00 -l nodes=16 -l mem=64gb -q workq -o /gpfs/home/natem/logs/llama.txt -j oe
+script_template = """#!/bin/bash
+#SBATCH --time=120:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64gb
+#SBATCH --partition=shared
+#SBATCH --output=/gpfs/home/natem/logs/llama.out
+#SBATCH --error=/gpfs/home/natem/logs/llama.err
 
-module rm python/3.6.3
+module rm python/3.8.3
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 

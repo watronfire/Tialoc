@@ -89,8 +89,11 @@ rule align:
     input:
         sequences = rules.filter.output.sequences,
         reference = config["reference"]
+    params:
+        trim_start = config["align"]["trim_start"],
+        trim_end = config["align"]["trim_end"]
     output:
-        sam_file = temp( os.path.join( config["output"], "aligned.sam" ) )
+        alignment = temp( os.path.join( config["output"], "aligned.fasta" ) )
     threads: 16
     shell:
         """
@@ -99,38 +102,23 @@ rule align:
             -t {threads} \
             {input.reference} \
             {input.sequences} \
-            -o {output.sam_file}
+            -o {output.sam_file} | \
+        gofasta sam toMultiAlign \
+            --threads {threads} \
+            --trim \
+            --trimstart {params.trim_start} \
+            --trimend {params.trim_end} \
+            --pad > {output.alignment}
         """
-
-rule sam_2_fasta:
-    input:
-        sam = rules.align.output.sam_file,
-        reference = config["reference"]
-    message: "Running datafunk to trim and pad against the reference"
-    params:
-        trim_start = config["align"]["trim_start"],
-        trim_end = config["align"]["trim_end"]
-    output:
-        alignment = os.path.join(config["output"],"aligned.fasta")
-    shell:
-        """
-        datafunk sam_2_fasta \
-          -s {input.sam} \
-          -r {input.reference} \
-          -o {output.alignment} \
-          -t [{params.trim_start}:{params.trim_end}] \
-          --pad \
-          --log-inserts 
-        """
-
 
 rule mask:
     message:
         """
         Mask bases in alignment based on provided VCF. Based on VCF provided by De Maio et al. at https://virological.org/t/masking-strategies-for-sars-cov-2-alignments/
         """
+    group: "tree"
     input:
-        alignment = rules.sam_2_fasta.output.alignment,
+        alignment = rules.align.output.alignment,
         mask = rules.download_mask.output.vcf
     output:
         alignment = os.path.join( config["output"], "masked.fasta" )
@@ -160,33 +148,10 @@ rule collapse_polytomies:
             --rename {config[gisaid_md]}
          """
 
-#rule prune_tree:
-#    message: "Prunes input tree to match alignment, metadata, and focus"
-#    group: "align"
-#    input:
-#        tree = rules.collapse_polytomies.output.collapsed_tree,
-#        alignment = rules.mask.output.alignment,
-#        metadata = rules.add_interest.output.metadata
-#    output:
-#        global_tree = os.path.join( config["output"], "data-dir/global.tree" ),
-#        global_alignment = os.path.join( config["output"], "data-dir/alignment.fasta" ),
-#        global_metadata = os.path.join( config["output"], "data-dir/metadata.csv" ),
-#        query_alignment = os.path.join( config["output"], "data-dir/query.fasta" ),
-#        query_metadata = os.path.join( config["output"], "data-dir/query.csv" )
-#    params:
-#        outdir = os.path.join( config["output"], "data-dir" )
-#    shell:
-#        """
-#        {python} workflow/scripts/prune_tree.py \
-#            --tree {input.tree} \
-#            --alignment {input.alignment} \
-#            --metadata {input.metadata} \
-#            --outdir {params.outdir}
-#        """
 
 rule prune_tree_R:
     message: "Prunes input tree to match alignment, metadata, and focus"
-    group: "align"
+    group: "tree"
     input:
         tree = rules.collapse_polytomies.output.collapsed_tree,
         alignment = rules.mask.output.alignment,
@@ -198,27 +163,32 @@ rule prune_tree_R:
         query_alignment = os.path.join( config["output"], "data-dir/query.fasta" ),
         query_metadata = os.path.join( config["output"], "data-dir/query.csv" )
     params:
-        outdir = os.path.join( config["output"], "data-dir" )
+        outdir = os.path.join( config["output"], "data-dir" ),
+        alignment_list = os.path.join( config["output"], "data-dir/alignment.txt" ),
+        query_list = os.path.join( config["output"], "data-dir/query.txt" )
     shell:
         """
         module load R &&
+        module load seqtk &&
         Rscript workflow/scripts/prune_tree.R \
             {input.tree} \
             {input.alignment} \
             {input.metadata} \
-            {params.outdir} 
+            {params.outdir} && 
+        seqtk subseq {input.alignment} {params.alignment_list} > {output.global_alignment} &&
+        seqtk subseq {input.alignment} {params.query_list} > {output.query_alignment}
         """
 
 
 rule generate_llama_script:
     message: "Generating cluster script for llama."
-    group: "align"
+    group: "tree"
     input:
-        global_tree = rules.prune_tree.output.global_tree,
-        global_alignment = rules.prune_tree.output.global_alignment,
-        global_metadata = rules.prune_tree.output.global_metadata,
-        query_alignment = rules.prune_tree.output.query_alignment,
-        query_metadata = rules.prune_tree.output.query_metadata
+        global_tree = rules.prune_tree_R.output.global_tree,
+        global_alignment = rules.prune_tree_R.output.global_alignment,
+        global_metadata = rules.prune_tree_R.output.global_metadata,
+        query_alignment = rules.prune_tree_R.output.query_alignment,
+        query_metadata = rules.prune_tree_R.output.query_metadata
     output:
         llama_script = os.path.join( config["output"], "llama_script.sh" )
     shell:

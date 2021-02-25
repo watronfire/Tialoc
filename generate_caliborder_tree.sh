@@ -11,9 +11,8 @@ module load R
 export AUGUR_RECURSION_LIMIT=3000
 
 cd $SLURM_SUBMIT_DIR
-echo $pwd
 snakemake -k -j 50 \
   --snakefile workflow/Snakefile \
   --configfile config/config.yaml \
   --cluster-config config/cluster.json \
-  --cluster "sbatch --time={cluster.walltime} --mem={cluster.mem} -c {cluster.n} --partition={cluster.queue} --output={cluster.logfile}"
+  --cluster "sbatch --time={cluster.walltime} --mem={cluster.mem} -c {cluster.n} --partition={cluster.queue} --output={cluster.logfile}" 

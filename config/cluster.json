@@ -27,11 +27,14 @@
   {
     "n" : 8
   },
-  "build_clade_tree" :
+  "build_clade_tree_fast" :
   {
     "mem" : "32gb",
     "n" : 16,
     "walltime" : "120:00:00"
+  },
+  "root_tree" : {
+    "mem" : "20gb"
   },
   "build_whole_tree" :
   {
