@@ -5,6 +5,7 @@ import pandas as pd
 import os
 from fnmatch import fnmatch
 import re
+from epiweeks import Week,Year
 
 """
 Pipeline steps:
@@ -28,6 +29,26 @@ def load_metadata( file ):
     return_df = return_df.set_index( "strain" )
     return return_df
 
+def date_string_to_epi_week(date_string):
+    """
+    parse a date string in YYYY-MM-DD format and return
+    cumulative epi week which is cumulative total epidemiological
+    weeks since 2019-12-22. Week beginning 2019-12-22 is week 0
+    """
+    try:
+        date = datetime.strptime(date_string, '%Y-%m-%d').date()
+    except:
+        return ""
+    # this is epi-week:
+    week = Week.fromdate(date)
+    if week.year < 2019 or (week.year == 2019 and week.week < 52):
+        return ""
+    elif week.year == 2019:
+        return("0")
+    else:
+        cum_epi_week = week.week + len(list(chain(*[[x for x in Year(y).iterweeks()] for y in range(2020, week.year)])))
+        return str(cum_epi_week)
+
 
 def load_collapsed_nodes( file ):
     cn = { "name":[], "node":[], "date":[] }
@@ -43,7 +64,7 @@ def load_collapsed_nodes( file ):
                 cn["name"].append( node )
                 cn["node"].append( line_split[0] )
                 try:
-                    cn["date"].append( date_re.search( node )[0] )
+                    cn["date"].append( date_string_to_epi_week( date_re.search( node )[0] ) )
                 except TypeError:
                     print( "Unable to get date for leaf {} in node {}".format( node, line_split[0] ) )
                     cn["date"].append( "?" )
@@ -98,7 +119,7 @@ def prune_redundant_leaves( tree, limit=0.0001, verbose=True, collapse_interest=
                 loc = child.taxon.division if child.taxon.country == "USA" else child.taxon.country
 
             try:
-                date = date_re.search( child.taxon.label )[0]
+                date = date_string_to_epi_week( date_re.search( child.taxon.label )[0] )
             except TypeError:
                 missing_c += 1
                 prune.append( child.taxon )
@@ -122,7 +143,7 @@ def prune_redundant_leaves( tree, limit=0.0001, verbose=True, collapse_interest=
 
 def pick_from( taxons, tree, metric, return_nonpicked=False ):
     if metric in ["earliest", "latest"]:
-        sorted_taxons = sorted( taxons, key=lambda x: date_re.search( x.label )[0], reverse=(metric=="latest") )
+        sorted_taxons = sorted( taxons, key=lambda x: date_string_to_epi_week( date_re.search( x.label )[0] ), reverse=(metric=="latest") )
     elif metric in ["basal", "distal"]:
         sorted_taxons = sorted( taxons, key=lambda x: tree.find_node_for_taxon( x ).distance_from_root(), reverse=(metric=="distal") )
 
