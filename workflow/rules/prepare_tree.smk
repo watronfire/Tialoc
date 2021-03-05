@@ -1,5 +1,6 @@
 import pandas
 import os
+import datetime
 
 rule combine_data:
     message: "Combine data from GISAID and SEARCH github repository, while also renaming sequences to match useful format"
