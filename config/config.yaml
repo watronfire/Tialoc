@@ -3,6 +3,7 @@
 # 'subsample' will process the output of llama and generate output files.
 function: "prepare"
 output: "/gpfs/home/natem/analysis/2021.02.16_hcov"
+gisaid_md: "/gpfs/home/natem/analysis/2021.02.16_hcov/HCoV-19-Genomics/metadata_2021-03-04_10-31.tsv"
 include: "resources/include_mb.txt"
 exclude: "resources/exclude.txt"
 reference: "resources/reference.fasta"
