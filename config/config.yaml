@@ -3,13 +3,11 @@
 # 'subsample' will process the output of llama and generate output files.
 function: "prepare"
 output: "/gpfs/home/natem/analysis/2021.02.16_hcov"
-gisaid_seqs: "/gpfs/home/natem/analysis/2020.10.30_hcov/sequences_2020-11-12_07-33.fasta"
-gisaid_md: "/gpfs/home/natem/analysis/2021.02.16_hcov/metadata_2021-02-15_10-17.tsv"
 include: "resources/include_mb.txt"
 exclude: "resources/exclude.txt"
 reference: "resources/reference.fasta"
 email: "natem@scripps.edu"
-focus: "division:California,Arizona,Texas,New Mexico;country:Mexico"
+focus: "division:California;country:Mexico"
 clades:
   - "A"
   - "B"

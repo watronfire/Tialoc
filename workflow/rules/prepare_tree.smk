@@ -1,11 +1,9 @@
-import datetime
+import pandas
 
 rule combine_data:
     message: "Combine data from GISAID and SEARCH github repository, while also renaming sequences to match useful format"
     group: "preparation"
     input:
-        gisaid_seqs = config["gisaid_seqs"],
-        gisaid_metadata = config["gisaid_md"],
         search_md = rules.download_search_data.output.metadata,
         exclude = rules.download_exclude.output.exclude
     params:
@@ -18,8 +16,6 @@ rule combine_data:
          """
          {python} workflow/scripts/combine_data.py \
             --search {params.search_repo} \
-            --gseqs {input.gisaid_seqs} \
-            --gmetadata {input.gisaid_metadata} \
             --country {params.country_dict} \
             --exclude {input.exclude}
          """
@@ -41,6 +37,10 @@ rule add_interest:
         """
 
 
+def get_max_date( metadata ) :
+    md = pandas.read_csv( metadata, sep="\t" )
+    return md.loc[md["country"]=="Mexico","collection_date"].max()
+
 rule filter:
     message:
         """
@@ -60,7 +60,8 @@ rule filter:
         group_by = config["filter"]["group_by"],
         sequences_per_group = config["filter"]["sequences_per_group"],
         min_date = config["filter"]["min_date"],
-        max_date = datetime.datetime.today().strftime( "%Y-%m-%d" )
+        max_date = lambda wildcards, input: get_max_date( input.metadata )
+        #max_date = datetime.datetime.today().strftime( "%Y-%m-%d" )
     output:
         sequences = os.path.join( config["output"], "filtered.fasta" )
     shell:
