@@ -1,4 +1,5 @@
 import pandas
+import os
 
 rule combine_data:
     message: "Combine data from GISAID and SEARCH github repository, while also renaming sequences to match useful format"
@@ -8,7 +9,7 @@ rule combine_data:
         exclude = rules.download_exclude.output.exclude
     params:
         search_repo = os.path.join( config["output"], "HCoV-19-Genomics/" ),
-        country_dict = config["combine_data"]["country_codes"],
+        country_dict = config["combine_data"]["country_codes"]
     output:
         sequences = os.path.join( config["output"], "HCoV-19-Genomics/sequences.fasta" ),
         metadata = os.path.join( config["output"], "HCoV-19-Genomics/metadata.tsv" )
@@ -60,8 +61,8 @@ rule filter:
         group_by = config["filter"]["group_by"],
         sequences_per_group = config["filter"]["sequences_per_group"],
         min_date = config["filter"]["min_date"],
-        max_date = lambda wildcards, input: get_max_date( input.metadata )
-        #max_date = datetime.datetime.today().strftime( "%Y-%m-%d" )
+        #max_date = lambda wildcards, input: get_max_date( input.metadata )
+        max_date = datetime.datetime.today().strftime( "%Y-%m-%d" )
     output:
         sequences = os.path.join( config["output"], "filtered.fasta" )
     shell:
@@ -102,8 +103,7 @@ rule align:
             -a -x asm5 \
             -t {threads} \
             {input.reference} \
-            {input.sequences} \
-            -o {output.sam_file} | \
+            {input.sequences} | \
         gofasta sam toMultiAlign \
             --threads {threads} \
             --trim \
